@@ -1,0 +1,244 @@
+[
+  {
+    "q": "XSS",
+    "title": "Cross Site Scripting Prevention Cheat Sheet",
+    "kind": "keyword"
+  },
+  {
+    "q": "cross-site scripting",
+    "title": "Cross Site Scripting Prevention Cheat Sheet",
+    "kind": "keyword"
+  },
+  {
+    "q": "SQLi",
+    "title": "SQL Injection Prevention Cheat Sheet",
+    "kind": "keyword"
+  },
+  {
+    "q": "SSRF",
+    "title": "Server-Side Request Forgery Prevention Cheat Sheet",
+    "kind": "keyword"
+  },
+  {
+    "q": "CSRF",
+    "title": "Cross-Site Request Forgery Prevention Cheat Sheet",
+    "kind": "keyword"
+  },
+  {
+    "q": "IDOR",
+    "title": "Insecure Direct Object Reference Prevention Cheat Sheet",
+    "kind": "keyword"
+  },
+  { "q": "OAuth", "title": "OAuth 2.0 Protocol Cheatsheet", "kind": "keyword" },
+  {
+    "q": "SSTI",
+    "title": "Server-Side Template Injection Prevention Cheat Sheet",
+    "kind": "keyword"
+  },
+  { "q": "JWT", "title": "JSON Web Token Cheat Sheet", "kind": "keyword" },
+  {
+    "q": "clickjacking",
+    "title": "Clickjacking Defense Cheat Sheet",
+    "kind": "keyword"
+  },
+  {
+    "q": "prototype pollution",
+    "title": "Prototype Pollution Prevention Cheat Sheet",
+    "kind": "keyword"
+  },
+  {
+    "q": "deserialization",
+    "title": "Deserialization Cheat Sheet",
+    "kind": "keyword"
+  },
+  {
+    "q": "prevent scripts injected into web pages",
+    "title": "Cross Site Scripting Prevention Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "account takeover through OAuth mistakes",
+    "title": "OAuth 2.0 Protocol Cheatsheet",
+    "kind": "natural"
+  },
+  {
+    "q": "stealing session cookies and impersonating users",
+    "title": "Cookie Theft Mitigation Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "weak password reset tokens and account recovery",
+    "title": "Forgot Password Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "changing an object identifier to read another user's data",
+    "title": "Insecure Direct Object Reference Prevention Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "server fetches internal addresses controlled by an attacker",
+    "title": "Server-Side Request Forgery Prevention Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "malicious commands passed to the operating system shell",
+    "title": "OS Command Injection Defense Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "attacker input changes a database SQL query",
+    "title": "SQL Injection Prevention Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "forged requests exploit an already authenticated browser",
+    "title": "Cross-Site Request Forgery Prevention Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "unsafe template expressions allow server code execution",
+    "title": "Server-Side Template Injection Prevention Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "safe storage of passwords using slow hashes and salts",
+    "title": "Password Storage Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "secure file uploads and dangerous file types",
+    "title": "File Upload Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "malicious serialized objects lead to code execution",
+    "title": "Deserialization Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "restrict which scripts a browser can execute",
+    "title": "Content Security Policy Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "transparent iframes trick users into clicking buttons",
+    "title": "Clickjacking Defense Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "session fixation and session identifier rotation",
+    "title": "Session Management Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "credential stuffing with leaked username password pairs",
+    "title": "Credential Stuffing Prevention Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "multi factor authentication bypass and recovery codes",
+    "title": "Multifactor Authentication Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "email ownership verification during account registration",
+    "title": "Email Validation and Verification in Identity Systems Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "validate JSON Web Token signatures and algorithms",
+    "title": "JSON Web Token Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "mass assignment lets attackers set privileged properties",
+    "title": "Mass Assignment Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "prototype pollution through JavaScript object properties",
+    "title": "Prototype Pollution Prevention Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "GraphQL query depth and authorization weaknesses",
+    "title": "GraphQL Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "container isolation and reducing Docker privileges",
+    "title": "Docker Security Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "untrusted pull requests stealing GitHub Actions secrets",
+    "title": "GitHub Actions Security Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "HTTP security response headers for browsers",
+    "title": "HTTP Security Response Headers Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "force secure HTTPS connections with HSTS",
+    "title": "HTTP Strict Transport Security Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "HTML elements overwrite JavaScript global variables",
+    "title": "DOM Clobbering Prevention Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "malicious text overrides an LLM system prompt",
+    "title": "LLM Prompt Injection Prevention Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "tenant isolation in multi tenant SaaS applications",
+    "title": "Multi-Tenant Application Security Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "business logic flaws bypass intended workflows",
+    "title": "Business Logic Security Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "validate and sanitize untrusted application input",
+    "title": "Input Validation Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "prevent confidential details from leaking in errors",
+    "title": "Error Handling Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "secure LDAP queries against injected filters",
+    "title": "LDAP Injection Prevention Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "injected XPath expressions query XML data",
+    "title": "XPath Injection Prevention Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "NoSQL query injection in document databases",
+    "title": "NoSQL Security Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "protect application cryptographic keys during their lifecycle",
+    "title": "Key Management Cheat Sheet",
+    "kind": "natural"
+  },
+  {
+    "q": "malicious instructions in retrieved RAG documents",
+    "title": "Retrieval-Augmented Generation (RAG) Security Cheat Sheet",
+    "kind": "natural"
+  }
+]

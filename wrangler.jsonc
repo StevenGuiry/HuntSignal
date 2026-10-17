@@ -1,0 +1,30 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "huntsignal",
+  "main": "apps/api/worker.ts",
+  "compatibility_date": "2026-10-16",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/feeds/*"],
+  },
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "invocation_logs": false },
+  },
+  "triggers": { "crons": ["47 * * * *"] },
+  "ratelimits": [
+    {
+      "name": "PUBLIC_LIMITER",
+      "namespace_id": "534101",
+      "simple": { "limit": 120, "period": 60 },
+    },
+    {
+      "name": "PERSONAL_LIMITER",
+      "namespace_id": "534102",
+      "simple": { "limit": 60, "period": 60 },
+    },
+  ],
+  "vars": { "ARCHIVE_BUCKET": "archive" },
+}

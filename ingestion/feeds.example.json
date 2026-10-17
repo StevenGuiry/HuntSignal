@@ -1,0 +1,13 @@
+[
+  {
+    "id": "medium-author",
+    "name": "Medium",
+    "url": "https://medium.com/feed/@REPLACE_WITH_AUTHOR",
+    "allowedHosts": ["medium.com"],
+    "kind": "article",
+    "fullTextPermitted": false,
+    "license": "Original author retains content rights",
+    "licenseUrl": null,
+    "rightsEvidence": "https://help.medium.com/hc/en-us/articles/214874118-Using-RSS-feeds-of-profiles-publications-and-topics"
+  }
+]
