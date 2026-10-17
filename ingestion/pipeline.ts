@@ -10,6 +10,12 @@ export async function ingestDocument(
   write: Writer,
   input: InputDocument,
   read?: ObjectReader,
+  claim?: {
+    sourceId: string;
+    externalId: string;
+    jobToken: string;
+    sourceToken: string;
+  },
 ) {
   const document = prepare(input);
   const check = await rpc<{
@@ -54,7 +60,18 @@ export async function ingestDocument(
   return rpc<{
     id: string;
     action: "inserted" | "updated" | "unchanged" | "preserved";
-  }>("hs_ingest", { ...document, changes });
+  }>("hs_ingest", {
+    ...document,
+    changes,
+    ...(claim
+      ? {
+          jobSourceId: claim.sourceId,
+          jobExternalId: claim.externalId,
+          jobLeaseToken: claim.jobToken,
+          sourceLeaseToken: claim.sourceToken,
+        }
+      : {}),
+  });
 }
 export async function runBatch(
   rpc: Rpc,

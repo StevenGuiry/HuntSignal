@@ -126,7 +126,12 @@ export async function runSource(
     if (!j.claimed) return;
     try {
       const doc = documentSchema.parse(j.document);
-      const result = await ingestDocument(rpc, write, doc, read);
+      const result = await ingestDocument(rpc, write, doc, read, {
+        sourceId,
+        externalId,
+        jobToken: j.token,
+        sourceToken: claim.token,
+      });
       await rpc("hs_ops_job", {
         action: "finish",
         sourceId,

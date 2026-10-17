@@ -1,6 +1,7 @@
 import { beforeAll, afterAll, it, expect } from "vitest";
 import { readFile } from "node:fs/promises";
 import { expandQuery } from "../packages/taxonomy";
+import { prepare } from "../ingestion/normalize";
 import { openLocal } from "../packages/local";
 import { ingestDocument } from "../ingestion/pipeline";
 import {
@@ -223,6 +224,71 @@ it("rejects stale job completion tokens", async () => {
     sourceId: "fence",
     externalId: "1",
     token: b.token,
+  });
+});
+it("fences revision activation, not just checkpoint completion", async () => {
+  const oldDoc = doc("atomic-fence"),
+    newDoc = { ...oldDoc, title: "Newer revision" };
+  const sourceId = "atomic-fence-source",
+    externalId = oldDoc.externalId;
+  const first = await local.rpc<{ token: string }>("hs_ops_source", {
+    action: "claim",
+    sourceId,
+    force: true,
+  });
+  await local.rpc("hs_ops_job", {
+    action: "enqueue",
+    sourceId,
+    externalId,
+    fingerprint: prepare(oldDoc).contentHash,
+    document: oldDoc,
+  });
+  const oldJob = await local.rpc<{ token: string }>("hs_ops_job", {
+    action: "claim",
+    sourceId,
+    externalId,
+  });
+  await local.db.query(
+    "update hs_jobs set lease_until=now()-interval '1 minute' where source_id=$1",
+    [sourceId],
+  );
+  await local.db.query(
+    "update hs_source_control set lease_until=now()-interval '1 minute' where source_id=$1",
+    [sourceId],
+  );
+  const second = await local.rpc<{ token: string }>("hs_ops_source", {
+    action: "claim",
+    sourceId,
+    force: true,
+  });
+  await local.rpc("hs_ops_job", {
+    action: "enqueue",
+    sourceId,
+    externalId,
+    fingerprint: prepare(newDoc).contentHash,
+    document: newDoc,
+  });
+  const newJob = await local.rpc<{ token: string }>("hs_ops_job", {
+    action: "claim",
+    sourceId,
+    externalId,
+  });
+  const result = await ingestDocument(local.rpc, write, newDoc, read, {
+    sourceId,
+    externalId,
+    jobToken: newJob.token,
+    sourceToken: second.token,
+  });
+  await expect(
+    ingestDocument(local.rpc, write, oldDoc, read, {
+      sourceId,
+      externalId,
+      jobToken: oldJob.token,
+      sourceToken: first.token,
+    }),
+  ).rejects.toThrow("lease lost before activation");
+  expect(await local.rpc("hs_detail", { id: result.id })).toMatchObject({
+    title: "Newer revision",
   });
 });
 it("commits feed validators only after every document has been durably consumed", async () => {
