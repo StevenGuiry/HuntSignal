@@ -1,4 +1,6 @@
 import { beforeAll, afterAll, it, expect } from "vitest";
+import { readFile } from "node:fs/promises";
+import { expandQuery } from "../packages/taxonomy";
 import { openLocal } from "../packages/local";
 import { ingestDocument } from "../ingestion/pipeline";
 import {
@@ -390,4 +392,34 @@ it("parses Retry-After dates and bounds diagnostic comparisons", () => {
   const d = revisionDiff("", Array(1000).fill("new").join("\n"));
   expect(d.truncated).toBe(true);
   expect(d.after.length).toBe(150);
+});
+it("preserves lexical results and scores when filtering before ranking", async () => {
+  const sql = await readFile(
+    "supabase/migrations/009_revision_feed.sql",
+    "utf8",
+  );
+  const definition = sql
+    .slice(
+      sql.indexOf("create or replace function hs_search("),
+      sql.indexOf("alter function hs_search"),
+    )
+    .replace("function hs_search(", "function hs_test_legacy_search(");
+  await local.db.exec(definition);
+  for (const q of [
+    "XSS",
+    "cross site scripting",
+    "synthetic research",
+    "missing concept",
+  ]) {
+    const p = {
+      q,
+      groups: expandQuery(q).groups,
+      sort: "relevance",
+      page: 1,
+      limit: 50,
+    };
+    expect(await local.rpc("hs_search", p)).toEqual(
+      await local.rpc("hs_test_legacy_search", p),
+    );
+  }
 });

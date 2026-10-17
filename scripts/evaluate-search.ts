@@ -45,9 +45,12 @@ try {
     keywordRank: number | null;
     hybridRank: number | null;
     milliseconds: number;
+    keywordMilliseconds: number;
   }[] = [];
   for (const entry of cases) {
+    const keywordStart = performance.now();
     const keyword = await repository.search(searchSchema.parse({ q: entry.q }));
+    const keywordMilliseconds = Math.round(performance.now() - keywordStart);
     const [vector] = await encoder.embed([entry.q]);
     const start = performance.now();
     const hybrid = await repository.search(
@@ -68,6 +71,7 @@ try {
       keywordRank: position(keyword.items),
       hybridRank: position(hybrid.items),
       milliseconds: Math.round(performance.now() - start),
+      keywordMilliseconds,
     });
     if (results.length % 10 === 0)
       console.log(
@@ -100,6 +104,9 @@ try {
     queryP95Ms: results.map((r) => r.milliseconds).sort((a, b) => a - b)[
       Math.ceil(results.length * 0.95) - 1
     ],
+    keywordP95Ms: results
+      .map((r) => r.keywordMilliseconds)
+      .sort((a, b) => a - b)[Math.ceil(results.length * 0.95) - 1],
     evaluation:
       "One designated relevant article per query; a regression set, not exhaustive human relevance judgments.",
   };

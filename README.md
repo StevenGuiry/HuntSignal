@@ -69,7 +69,7 @@ Pentester Land is a historical index. Its last publication date is displayed thr
 
 ## Production on the proposed free stack
 
-1. Create a Supabase Free project. Apply the numbered SQL migrations in order, from `001_archive.sql` through `009_revision_feed.sql`. Existing installations only need unapplied migrations. These create the archive/search, personal library and operations schemas. Migration 007 has an installation-specific GitHub admin bootstrap: forks must replace or remove that owner ID before applying it.
+1. Create a Supabase Free project. Apply the numbered SQL migrations in order, from `001_archive.sql` through `010_filtered_lexical_ranking.sql`. Existing installations only need unapplied migrations. These create the archive/search, personal library and operations schemas. Migration 007 has an installation-specific GitHub admin bootstrap: forks must replace or remove that owner ID before applying it.
 2. Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in an ignored `.env` file in this workspace, or in the same terminal that runs ingestion. The CLI loads `.env` automatically; existing terminal/CI variables take precedence. `SUPABASE_URL` is the HTTPS project URL, not a Postgres connection string. The key setting accepts a legacy `service_role` JWT or a modern `sb_secret_` backend key. Keep it out of chat and browser code.
 
    ```powershell

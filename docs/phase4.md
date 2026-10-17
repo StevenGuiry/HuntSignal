@@ -4,7 +4,7 @@ HuntSignal 0.4 adds durable discovery checkpoints, source and document leases, b
 
 ## Operations and discovery
 
-Apply migrations 007, 008 and 009 in order. The operations migration contains this installation's verified GitHub owner ID (`46968144`) for initial admin membership; forks must review that bootstrap before applying it. Administration is stored in `hs_admins` and checked against `auth.uid()`. Editable profile metadata never grants access. All admin mutations are audited. Ordinary accounts cannot read job payloads, audit history, capacity diagnostics or the admin allowlist.
+Apply migrations 007, 008, 009 and 010 in order. Migration 010 preserves lexical scores and ordering while ranking only documents that satisfy all query groups and filters. The operations migration contains this installation's verified GitHub owner ID (`46968144`) for initial admin membership; forks must review that bootstrap before applying it. Administration is stored in `hs_admins` and checked against `auth.uid()`. Editable profile metadata never grants access. All admin mutations are audited. Ordinary accounts cannot read job payloads, audit history, capacity diagnostics or the admin allowlist.
 
 The Sources page shows discovery attempts, successful checks, source publication dates and pending/failed work. The Operations page adds source pause/resume, queued refreshes, failed-job retries and review resolution. Refresh queues work for the next runner invocation; it does not perform crawling inside a web request. The private API also supports an explicit withdrawal with a reason. Withdrawal immediately removes published reader/history/search access and derived lexical/vector/citation rows. Housekeeping then removes unreferenced withdrawn objects from the private archive bucket. Rediscovery cannot republish a withdrawal.
 
@@ -67,7 +67,7 @@ The automated restore targets a new **local PGlite database**, refuses existing 
 
 **Capacity warning:** inspect database/object counts and provider egress. Pause historical backfill first. Measure growth before expanding from 510 to 1,000 and then 2,000 items. Retain original archives; remove only proven unreferenced staging files or explicitly withdrawn content. No paid upgrade is automatic.
 
-**Withdrawal:** submit the admin withdrawal action with a reason, verify public search/detail/history are unavailable, run `npm run ops -- housekeeping --remote`, and export a fresh privacy ledger. Historical encrypted backups retain their original bytes until their retention window ends; every recovery must apply the newer suppression/deletion journal.
+**Withdrawal:** submit the admin withdrawal action with a reason, verify public search/detail/history are unavailable, run `npm run ops -- housekeeping --remote`, and export a fresh privacy ledger. Historical encrypted snapshots remain until the operator removes them; every recovery must apply the newer suppression/deletion journal.
 
 **Restore:** stop ingestion, preserve the existing database, obtain the freshest privacy ledger, verify/decrypt into a new local directory, check catalog counts and two-user ownership, rebuild derived indexes, and validate the target runtime before switching any production connection.
 
@@ -78,3 +78,15 @@ The automated restore targets a new **local PGlite database**, refuses existing 
 The pre-release suite includes real SQL lease/cursor/retry tests, admin isolation, capacity stops, withdrawal non-resurrection, revision comparisons, authenticated encryption tamper checks, privacy-journal recovery, edge-cache isolation and throttling. An encrypted fixture is restored through the actual CLI and its recovered RLS is tested.
 
 The first hosted backup exported all 510 objects (841,721 compressed bytes) on 17 October 2026 and was successfully restored into a separate local directory with personal data. Live migration verification reported schema version 9, approximately 37.3 MB database usage and 0.84 MB archive storage. Release/version, scheduler activation and browser verification are recorded after deployment. The week-long observation gate remains open until seven actual days have elapsed.
+
+## Deployed release
+
+Released on 17 October 2026 at [HuntSignal](https://huntsignal.huntsignal.workers.dev), Cloudflare version `7badeb8d-f7b3-443b-a389-f95d74c5488c`. Hosted Phase 2/4 smoke checks passed, and temporary-account tests confirmed ordinary users cannot access operations or other users' private data. All temporary identities were removed. The signed-in Operations and public source-health screens were verified in the browser with no captured console warnings/errors or horizontal overflow at the current narrow viewport.
+
+The operator approved publication of the source-only [StevenGuiry/HuntSignal repository](https://github.com/StevenGuiry/HuntSignal). The initial [CI run](https://github.com/StevenGuiry/HuntSignal/actions/runs/39029941940) and [GitHub ingestion run](https://github.com/StevenGuiry/HuntSignal/actions/runs/39029947461) succeeded. Four Actions secrets were encrypted with the repository public key and `INGESTION_ENABLED=true` enables the trusted-main schedule. Public source excludes environment files, archives, personal data, backup files and keys.
+
+The daily Windows backup task was installed at 03:35 Europe/London and a manual task invocation returned exit code 0. Its second backup downloaded only the two newly added archive objects, confirming incremental behavior. The configured backup folder and separate key path are local operator settings in the ignored environment file. A backup on the same physical drive still needs an independent copy for disk-failure recovery.
+
+A 50-query hosted evaluation initially hit a database error on a long keyword query near the five-second search deadline. Migration 010 moves relevance scoring after document eligibility. Local comparison preserved complete result JSON for representative queries; the full hosted rerun completed successfully with keyword p95 208 ms and hybrid retrieval p95 228 ms. The designated reference article appeared in the hybrid top 20 for 49/50 queries. These timings cover retrieval RPC/network time and exclude browser model startup; this is a targeted regression set, not exhaustive relevance judgments. Raw results are in ignored `.data/evaluation/`.
+
+The seven-day observation window remains in progress. Wider source adapters and expansion toward thousands of records remain gated on measured operation and capacity.
