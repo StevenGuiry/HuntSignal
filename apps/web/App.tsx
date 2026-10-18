@@ -36,6 +36,8 @@ import { Account } from "./Account";
 import { Operations, SourceHealthPanel } from "./Operations";
 import { RevisionHistory } from "./RevisionHistory";
 import { ReportFacts } from "./ReportFacts";
+import { TechniqueLibrary, ReportTechniques } from "./Techniques";
+import type { TechniqueCard } from "../../packages/techniques";
 import { ResearchFilters } from "./ResearchFilters";
 import {
   emptyResearchFilters,
@@ -66,6 +68,7 @@ type View =
   | "research"
   | "sources"
   | "topics"
+  | "techniques"
   | "library"
   | "alerts"
   | "account"
@@ -107,6 +110,11 @@ type State = ResearchFilterState & {
   page: number;
   item: string;
   match: string;
+  at: string;
+  rev: string;
+  technique: string;
+  evidence: string;
+  reportId: string;
   after: string;
   before: string;
   mode: "keyword" | "hybrid";
@@ -129,6 +137,11 @@ const initial = (): State => {
     page: Number(p.get("page")) || 1,
     item: p.get("item") || "",
     match: (p.get("match") || "").slice(0, 600),
+    at: p.get("at") || "",
+    rev: p.get("rev") || "",
+    technique: p.get("technique") || "",
+    evidence: p.get("evidence") || "",
+    reportId: p.get("reportId") || "",
     after: p.get("after") || "",
     before: p.get("before") || "",
     mode: p.get("mode") === "hybrid" ? "hybrid" : "keyword",
@@ -221,6 +234,11 @@ export default function App() {
       view,
       item: "",
       match: "",
+      at: "",
+      rev: "",
+      technique: "",
+      evidence: "",
+      reportId: "",
       q: "",
       source: "",
       author: "",
@@ -269,9 +287,14 @@ export default function App() {
           await api<Detail>(`/api/items/${state.item}`, controller.signal),
         );
       } else if (
-        ["topics", "library", "alerts", "account", "operations"].includes(
-          state.view,
-        )
+        [
+          "topics",
+          "techniques",
+          "library",
+          "alerts",
+          "account",
+          "operations",
+        ].includes(state.view)
       ) {
         return;
       } else if (state.view === "sources") {
@@ -407,9 +430,17 @@ export default function App() {
     state.before
   );
   const openItem = (item: string, match = "") => {
-    update({ item, match });
+    update({ item, match, at: "", rev: "" });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+  const openEvidence = (item: TechniqueCard) =>
+    update({
+      item: item.document_id,
+      at: String(item.sourceStart),
+      rev: item.revision_id,
+      match: "",
+      page: state.page,
+    });
   const search = (q = draft) =>
     update({
       q: q.trim(),
@@ -447,10 +478,16 @@ export default function App() {
           </span>
         </button>
         <div className="workspace-label">
-          <span className="status-dot" /> PUBLIC COLLECTION <span>06</span>
+          <span className="status-dot" /> PUBLIC COLLECTION <span>07</span>
         </div>
         <nav aria-label="Main navigation">
           <span className="nav-label">EXPLORE</span>
+          <button
+            className={state.view === "techniques" ? "active" : ""}
+            onClick={() => navigate("techniques")}
+          >
+            <Layers size={18} /> Techniques & payloads
+          </button>
           <button
             className={state.view === "archive" ? "active" : ""}
             onClick={() => navigate("archive")}
@@ -547,7 +584,7 @@ export default function App() {
           <span className="avatar">HS</span>
           <div>
             {auth.user?.name || "Research workspace"}
-            <small>Research archive · v0.6</small>
+            <small>Research archive · v0.7</small>
           </div>
           <span className="status-dot" />
         </div>
@@ -664,16 +701,36 @@ export default function App() {
                   {detail.content_error ? (
                     <ErrorBox message={detail.content_error} />
                   ) : detail.markdown ? (
-                    <ArchiveMarkdown
-                      key={`${detail.id}:${detail.content_hash}:${auth.user?.id || "guest"}`}
-                      markdown={detail.markdown}
-                      originalUrl={detail.canonical_url}
-                      documentId={detail.id}
-                      revision={detail.content_hash}
-                      owner={auth.user?.id || "guest"}
-                      passage={state.match}
-                      quality={detail.content_quality}
-                    />
+                    <>
+                      {detail.kind === "report" && (
+                        <ReportTechniques
+                          key={detail.id}
+                          id={detail.id}
+                          onEvidence={openEvidence}
+                        />
+                      )}
+                      <ArchiveMarkdown
+                        key={`${detail.id}:${detail.content_hash}:${auth.user?.id || "guest"}`}
+                        markdown={detail.markdown}
+                        originalUrl={detail.canonical_url}
+                        documentId={detail.id}
+                        revision={detail.content_hash}
+                        owner={auth.user?.id || "guest"}
+                        passage={state.match}
+                        quality={detail.content_quality}
+                        sourceOffset={
+                          state.rev === detail.current_revision_id &&
+                          /^\d+$/.test(state.at) &&
+                          Number(state.at) < detail.markdown.length
+                            ? Number(state.at)
+                            : undefined
+                        }
+                        staleEvidence={
+                          state.at !== "" &&
+                          state.rev !== detail.current_revision_id
+                        }
+                      />
+                    </>
                   ) : (
                     <div className="metadata-notice">
                       <FileText size={26} />
@@ -748,6 +805,12 @@ export default function App() {
                 </article>
               ) : null}
             </>
+          ) : state.view === "techniques" ? (
+            <TechniqueLibrary
+              filters={state}
+              onChange={(patch) => update(patch)}
+              onEvidence={openEvidence}
+            />
           ) : state.view === "library" ? (
             <ResearchLibrary onOpen={openItem} />
           ) : state.view === "alerts" ? (

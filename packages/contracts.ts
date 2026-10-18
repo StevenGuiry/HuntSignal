@@ -135,6 +135,7 @@ export type ArchiveContent = {
   revision?: string;
 };
 export type Detail = Card & {
+  current_revision_id: string;
   report_facts?: import("./report-facts").ReportFacts | null;
   license: string;
   license_url: string | null;

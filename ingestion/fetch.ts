@@ -100,7 +100,7 @@ export async function safeFetch(
       {
         signal: AbortSignal.timeout(30000),
         headers: {
-          "User-Agent": "HuntSignal/0.6.1 public-research-archive",
+          "User-Agent": "HuntSignal/0.7.0 public-research-archive",
           "Accept-Encoding": "identity",
           ...headers,
         },

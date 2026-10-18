@@ -86,6 +86,7 @@ export async function openLocal(memory = false) {
     "015_report_facts",
     "016_research_workflow",
     "017_manual_submissions",
+    "018_techniques",
   ]) {
     const applied = await db.query(
       "select name from hs_migrations where name=$1",

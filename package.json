@@ -1,6 +1,6 @@
 {
   "name": "huntsignal",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -40,7 +40,8 @@
     "smoke:capture": "tsx scripts/smoke-capture.ts",
     "format": "prettier --write apps packages ingestion scripts tests *.ts *.json *.jsonc *.md docs",
     "deploy": "npm run build && wrangler deploy",
-    "deploy:check": "npm run build && wrangler deploy --dry-run"
+    "deploy:check": "npm run build && wrangler deploy --dry-run",
+    "techniques": "tsx ingestion/techniques-cli.ts"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.10",
@@ -59,7 +60,8 @@
     "remark-gfm": "^4.0.1",
     "robots-parser": "^3.0.1",
     "turndown": "^7.2.4",
-    "zod": "^4.1.0"
+    "zod": "^4.1.0",
+    "mdast-util-from-markdown": "2.1.0"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

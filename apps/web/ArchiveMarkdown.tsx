@@ -98,6 +98,8 @@ export function ArchiveMarkdown({
   passage = "",
   quality,
   preview = false,
+  sourceOffset,
+  staleEvidence = false,
 }: {
   markdown: string;
   originalUrl: string;
@@ -107,6 +109,8 @@ export function ArchiveMarkdown({
   passage?: string;
   quality?: ContentQuality | null;
   preview?: boolean;
+  sourceOffset?: number;
+  staleEvidence?: boolean;
 }) {
   const root = useRef<HTMLDivElement>(null);
   const positionEnabled = useRef(true);
@@ -209,8 +213,14 @@ export function ArchiveMarkdown({
     };
   }, [markdown, documentId, revision, storageKey]);
   useEffect(() => {
-    if (!passage) return;
-    const offset = passageOffset(markdown, passage);
+    if (staleEvidence) {
+      setMessage(
+        "This report has changed since the evidence was extracted. Open the current techniques list for updated source links.",
+      );
+      return;
+    }
+    if (!passage && sourceOffset === undefined) return;
+    const offset = sourceOffset ?? passageOffset(markdown, passage);
     const candidates = Array.from(
       root.current?.querySelectorAll<HTMLElement>("[data-hs-start]") || [],
     )
@@ -228,7 +238,7 @@ export function ArchiveMarkdown({
       setMessage(
         "This result matched document metadata. No exact passage was found in the archived body.",
       );
-  }, [markdown, passage]);
+  }, [markdown, passage, sourceOffset, staleEvidence]);
   return (
     <>
       {!!quality?.issues.length && (

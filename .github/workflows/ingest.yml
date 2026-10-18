@@ -77,6 +77,11 @@ jobs:
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         continue-on-error: true
         run: npm run quality:check -- --remote --limit 100
+      - name: Extract report techniques and payloads
+        id: techniques
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        continue-on-error: true
+        run: npm run techniques -- --remote --limit 100
       - name: Prepare pinned model
         id: model
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
@@ -98,7 +103,7 @@ jobs:
         continue-on-error: true
         run: npm run ops -- housekeeping --remote
       - name: Report partial failures
-        if: ${{ !cancelled() && (steps.discovery.outcome == 'failure' || steps.submissions.outcome == 'failure' || steps.capture.outcome == 'failure' || steps.report_facts.outcome == 'failure' || steps.quality.outcome == 'failure' || steps.model.outcome == 'failure' || steps.index.outcome == 'failure' || steps.alerts.outcome == 'failure' || steps.maintenance.outcome == 'failure') }}
+        if: ${{ !cancelled() && (steps.discovery.outcome == 'failure' || steps.submissions.outcome == 'failure' || steps.capture.outcome == 'failure' || steps.report_facts.outcome == 'failure' || steps.quality.outcome == 'failure' || steps.techniques.outcome == 'failure' || steps.model.outcome == 'failure' || steps.index.outcome == 'failure' || steps.alerts.outcome == 'failure' || steps.maintenance.outcome == 'failure') }}
         run: |
           echo 'One or more stages failed. Successful stages were retained; inspect the Operations page and failed step.'
           exit 1

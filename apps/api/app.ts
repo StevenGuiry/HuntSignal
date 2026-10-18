@@ -6,6 +6,11 @@ import { Repository } from "../../packages/repository";
 import { taxonomy } from "../../packages/taxonomy";
 import { personalApi, type AccountBackend } from "./personal";
 import { feedsApi } from "./feeds";
+import {
+  TECHNIQUE_VERSION,
+  techniqueQuerySchema,
+} from "../../packages/techniques";
+import { normalizeWords } from "../../packages/taxonomy";
 export function createApp(
   repository: Repository,
   mode = "local",
@@ -46,7 +51,7 @@ export function createApp(
     );
   });
   app.get("/api/health", (c) =>
-    c.json({ status: "ok", mode, version: "0.6.1", search: "hybrid-capable" }),
+    c.json({ status: "ok", mode, version: "0.7.0", search: "hybrid-capable" }),
   );
   app.get("/api/auth/config", async (c) => {
     c.header("Cache-Control", "no-store");
@@ -81,6 +86,29 @@ export function createApp(
     );
   });
   app.get("/api/stats", async (c) => c.json(await repository.stats()));
+  app.get("/api/techniques", async (c) => {
+    const parsed = techniqueQuerySchema.safeParse(c.req.query());
+    if (!parsed.success)
+      return c.json(
+        { error: { message: "Check technique search filters." } },
+        400,
+      );
+    const topic = taxonomy.find((t) =>
+      [t.label, ...t.aliases].some(
+        (a) => normalizeWords(a) === normalizeWords(parsed.data.q),
+      ),
+    );
+    c.header("Cache-Control", "no-store");
+    return c.json(
+      await repository.rpc("hs_techniques_search", {
+        ...parsed.data,
+        version: TECHNIQUE_VERSION,
+        terms: topic
+          ? [parsed.data.q, topic.label, ...topic.aliases]
+          : [parsed.data.q],
+      }),
+    );
+  });
   app.get("/api/search/facets", async (c) => {
     c.header("Cache-Control", "public, max-age=300");
     return c.json(await repository.rpc("hs_search_facets"));

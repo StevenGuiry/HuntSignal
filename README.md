@@ -1,6 +1,6 @@
 # HuntSignal
 
-A searchable library of public vulnerability write-ups and security research. Version 0.6.1 adds [administrator-reviewed URL submissions](docs/manual-submissions.md) alongside [report filters, reading tools and extraction quality checks](docs/phase6.md), building on [bounty and severity in report headers](docs/report-outcomes.md). HuntSignal publishes entries only after substantive text is archived, and captures public reports/articles from their sources. Metadata-only discoveries remain internal candidates. See the [text capture policy](docs/text-capture.md), [Phase 5 source guide](docs/phase5.md) and [Phase 4 operations guide](docs/phase4.md). Optional accounts, private libraries and alerts are documented in [Phase 3](docs/phase3.md); keyword and semantic search are described in [Phase 2](docs/phase2.md).
+A searchable library of public vulnerability write-ups and security research. Version 0.7 adds a [source-linked techniques and payloads library](docs/techniques.md). It includes [administrator-reviewed URL submissions](docs/manual-submissions.md), [report filters and reading tools](docs/phase6.md), and [bounty and severity in report headers](docs/report-outcomes.md). HuntSignal publishes entries only after substantive text is archived. Metadata-only discoveries remain internal candidates. See the [text capture policy](docs/text-capture.md), [Phase 5 source guide](docs/phase5.md) and [Phase 4 operations guide](docs/phase4.md). Optional accounts, private libraries and alerts are documented in [Phase 3](docs/phase3.md); keyword and semantic search are described in [Phase 2](docs/phase2.md).
 
 ## Run locally
 
@@ -76,7 +76,7 @@ Pentester Land is a historical index. Its last publication date is displayed thr
 
 ## Production on the proposed free stack
 
-1. Create a Supabase Free project. Apply the numbered SQL migrations in order, from `001_archive.sql` through `017_manual_submissions.sql`. Existing installations only need unapplied migrations. These create the archive/search, personal library, operations and text-publication controls. Migration 007 has an installation-specific GitHub admin bootstrap: forks must replace or remove that owner ID before applying it.
+1. Create a Supabase Free project. Apply the numbered SQL migrations in order, from `001_archive.sql` through `018_techniques.sql`. Existing installations only need unapplied migrations. These create the archive/search, personal library, operations and text-publication controls. Migration 007 has an installation-specific GitHub admin bootstrap: forks must replace or remove that owner ID before applying it.
 2. Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in an ignored `.env` file in this workspace, or in the same terminal that runs ingestion. The CLI loads `.env` automatically; existing terminal/CI variables take precedence. `SUPABASE_URL` is the HTTPS project URL, not a Postgres connection string. The key setting accepts a legacy `service_role` JWT or a modern `sb_secret_` backend key. Keep it out of chat and browser code.
 
    ```powershell
