@@ -4,7 +4,11 @@ import { useAuth, SignInGate } from "./auth";
 import { queryVector } from "./semantic";
 import { EMBEDDING_MODEL } from "../../packages/embeddings/config";
 import type { SavedSearch, Notifications } from "../../packages/personal";
-export type SearchToSave = {
+import {
+  researchFilterKeys,
+  type ResearchFilterState,
+} from "../../packages/research-filters";
+export type SearchToSave = ResearchFilterState & {
   q: string;
   source: string;
   topic: string;
@@ -22,7 +26,16 @@ export function SaveSearch({ search }: { search: SearchToSave }) {
     [busy, setBusy] = useState(false),
     [message, setMessage] = useState("");
   const filters = Object.fromEntries(
-    ["source", "topic", "author", "kind", "completeness", "after", "before"]
+    [
+      "source",
+      "topic",
+      "author",
+      "kind",
+      "completeness",
+      "after",
+      "before",
+      ...researchFilterKeys,
+    ]
       .map((key) => [key, search[key as keyof SearchToSave]])
       .filter(([, value]) => !!value),
   );

@@ -52,7 +52,11 @@ export function prepare(input: InputDocument) {
     doc.topics,
   );
   doc.markdown = doc.markdown.replace(/\r\n/g, "\n").trim();
-  const { revision: _revision, ...stableContent } = doc;
+  const {
+    revision: _revision,
+    expectedRevisionId: _expectedRevisionId,
+    ...stableContent
+  } = doc;
   const contentHash = hash(JSON.stringify(stableContent));
   const archive = {
     title: doc.title,

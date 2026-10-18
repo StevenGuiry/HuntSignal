@@ -36,6 +36,17 @@ import { Account } from "./Account";
 import { Operations, SourceHealthPanel } from "./Operations";
 import { RevisionHistory } from "./RevisionHistory";
 import { ReportFacts } from "./ReportFacts";
+import { ResearchFilters } from "./ResearchFilters";
+import {
+  emptyResearchFilters,
+  researchFilterKeys,
+  type ResearchFilterState,
+} from "../../packages/research-filters";
+import {
+  contentLabel,
+  needsContentReview,
+} from "../../packages/content-quality";
+import { bountyLabel } from "../../packages/report-facts";
 import { CardPersonalActions, ReaderPersonal } from "./PersonalActions";
 import type { DocumentFlags } from "../../packages/personal";
 import { queryVector } from "./semantic";
@@ -84,7 +95,7 @@ type Run = {
   failed: number;
   detail: string;
 };
-type State = {
+type State = ResearchFilterState & {
   view: View;
   q: string;
   source: string;
@@ -95,6 +106,7 @@ type State = {
   sort: string;
   page: number;
   item: string;
+  match: string;
   after: string;
   before: string;
   mode: "keyword" | "hybrid";
@@ -102,6 +114,9 @@ type State = {
 const initial = (): State => {
   const p = new URLSearchParams(location.search);
   return {
+    ...(Object.fromEntries(
+      researchFilterKeys.map((k) => [k, p.get(k) || ""]),
+    ) as ResearchFilterState),
     view: (p.get("view") as View) || "archive",
     q: p.get("q") || "",
     source: p.get("source") || "",
@@ -113,6 +128,7 @@ const initial = (): State => {
       p.get("mode") === "hybrid" ? "relevance" : p.get("sort") || "relevance",
     page: Number(p.get("page")) || 1,
     item: p.get("item") || "",
+    match: (p.get("match") || "").slice(0, 600),
     after: p.get("after") || "",
     before: p.get("before") || "",
     mode: p.get("mode") === "hybrid" ? "hybrid" : "keyword",
@@ -201,8 +217,10 @@ export default function App() {
   };
   const navigate = (view: View) =>
     update({
+      ...emptyResearchFilters,
       view,
       item: "",
+      match: "",
       q: "",
       source: "",
       author: "",
@@ -276,6 +294,7 @@ export default function App() {
           "page",
           "after",
           "before",
+          ...researchFilterKeys,
         ] as const)
           if (state[key]) p.set(key, String(state[key]));
         const lexical = await api<SearchResult>(
@@ -378,6 +397,7 @@ export default function App() {
     return () => controller.abort();
   }, [auth.user?.id, result, state.item, state.view]);
   const activeFilters = !!(
+    researchFilterKeys.some((k) => !!state[k]) ||
     state.source ||
     state.author ||
     state.topic ||
@@ -386,12 +406,18 @@ export default function App() {
     state.after ||
     state.before
   );
-  const openItem = (item: string) => {
-    update({ item });
+  const openItem = (item: string, match = "") => {
+    update({ item, match });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   const search = (q = draft) =>
-    update({ q: q.trim(), item: "", view: "archive", sort: "relevance" });
+    update({
+      q: q.trim(),
+      item: "",
+      match: "",
+      view: "archive",
+      sort: "relevance",
+    });
   const topTopics = [
     "XSS",
     "Account takeover",
@@ -619,11 +645,7 @@ export default function App() {
                       className={`archive-badge ${detail.completeness === "full" ? "complete" : ""}`}
                     >
                       <Database size={12} />
-                      {detail.completeness === "full"
-                        ? "Full text archived"
-                        : detail.completeness === "partial"
-                          ? "Partial text"
-                          : "Metadata only"}
+                      {contentLabel(detail)}
                     </span>
                   </div>
                   <div className="reader-tags">
@@ -643,8 +665,14 @@ export default function App() {
                     <ErrorBox message={detail.content_error} />
                   ) : detail.markdown ? (
                     <ArchiveMarkdown
+                      key={`${detail.id}:${detail.content_hash}:${auth.user?.id || "guest"}`}
                       markdown={detail.markdown}
                       originalUrl={detail.canonical_url}
+                      documentId={detail.id}
+                      revision={detail.content_hash}
+                      owner={auth.user?.id || "guest"}
+                      passage={state.match}
+                      quality={detail.content_quality}
                     />
                   ) : (
                     <div className="metadata-notice">
@@ -727,6 +755,7 @@ export default function App() {
               onOpen={openItem}
               onSearch={(saved) =>
                 update({
+                  ...emptyResearchFilters,
                   view: "archive",
                   item: "",
                   q: saved.queryText,
@@ -739,7 +768,12 @@ export default function App() {
                   completeness: "",
                   after: "",
                   before: "",
-                  ...saved.filters,
+                  ...Object.fromEntries(
+                    Object.entries(saved.filters).map(([k, v]) => [
+                      k,
+                      String(v),
+                    ]),
+                  ),
                 })
               }
             />
@@ -1063,8 +1097,10 @@ export default function App() {
                     onChange={(e) => update({ completeness: e.target.value })}
                   >
                     <option value="">All availability</option>
-                    <option value="full">Full text archived</option>
-                    <option value="partial">Partial text</option>
+                    <option value="full">Complete text only</option>
+                    <option value="partial">
+                      Summaries, abstracts & partial text
+                    </option>
                   </select>
                 </label>
                 {state.topic && (
@@ -1091,6 +1127,7 @@ export default function App() {
                     className="clear-filters"
                     onClick={() =>
                       update({
+                        ...emptyResearchFilters,
                         source: "",
                         author: "",
                         topic: "",
@@ -1120,6 +1157,10 @@ export default function App() {
                   </select>
                 </label>
               </div>
+              <ResearchFilters
+                values={state}
+                onApply={(filters) => update(filters)}
+              />
               {dates && (
                 <div className="date-filters">
                   <label>
@@ -1141,7 +1182,7 @@ export default function App() {
                 </div>
               )}
               <SaveSearch
-                key={`${auth.user?.id || "guest"}:${state.q}:${JSON.stringify([state.source, state.topic, state.author, state.kind, state.completeness, state.after, state.before, state.mode])}`}
+                key={`${auth.user?.id || "guest"}:${state.q}:${JSON.stringify([state.source, state.topic, state.author, state.kind, state.completeness, state.after, state.before, state.mode, ...researchFilterKeys.map((k) => state[k])])}`}
                 search={state}
               />
               <div className="result-summary">
@@ -1184,6 +1225,11 @@ export default function App() {
                       key={item.id}
                       item={item}
                       onOpen={() => openItem(item.id)}
+                      onMatch={
+                        state.q && item.snippet
+                          ? () => openItem(item.id, item.snippet.slice(0, 600))
+                          : undefined
+                      }
                       onTopic={(topic) => update({ topic, q: "" })}
                       flags={
                         annotations.owner === auth.user?.id
@@ -1301,12 +1347,14 @@ function Stat({
 function ResultCard({
   item,
   onOpen,
+  onMatch,
   onTopic,
   flags,
   onFlags,
 }: {
   item: Card;
   onOpen: () => void;
+  onMatch?: () => void;
   onTopic: (t: string) => void;
   flags?: DocumentFlags;
   onFlags: (flags: DocumentFlags) => void;
@@ -1336,6 +1384,20 @@ function ResultCard({
         <h2>
           <button onClick={onOpen}>{item.title}</button>
         </h2>
+        {item.kind === "report" && (
+          <div className="result-outcomes">
+            <span>Bounty: {bountyLabel(item.report_facts)}</span>
+            <span
+              className={`severity-${item.report_facts?.severity || "unknown"}`}
+            >
+              {item.report_facts?.severityFinal ? "Final" : "Current"} severity:{" "}
+              {item.report_facts?.severity || "Not available"}
+              {item.report_facts?.priority
+                ? ` · ${item.report_facts.priority}`
+                : ""}
+            </span>
+          </div>
+        )}
         <p className="snippet">
           {item.snippet ? (
             <Highlight text={item.snippet} />
@@ -1345,6 +1407,11 @@ function ResultCard({
             "Public report metadata. Follow the original source for the complete write-up."
           )}
         </p>
+        {onMatch && (
+          <button className="passage-link" onClick={onMatch}>
+            Jump to matching passage <ArrowRight size={13} />
+          </button>
+        )}
         <div className="result-tags">
           {item.topics.slice(0, 4).map((t) => (
             <button className="tag" key={t} onClick={() => onTopic(t)}>
@@ -1368,11 +1435,7 @@ function ResultCard({
             ) : (
               <Globe size={12} />
             )}{" "}
-            {item.completeness === "full"
-              ? "Full text archived"
-              : item.completeness === "partial"
-                ? "Partial archive"
-                : "Metadata only"}
+            {contentLabel(item)}
           </span>
           <a
             href={item.canonical_url}

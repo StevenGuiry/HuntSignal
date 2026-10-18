@@ -5,7 +5,12 @@ import robotsParser from "robots-parser";
 import { safeFetch, SourceFetchError, validateFetchUrl } from "./fetch";
 import { documentSchema, type InputDocument } from "../packages/contracts";
 import { toDate } from "./normalize";
-export const CAPTURE_VERSION = "public-text-v2";
+import {
+  assessContent,
+  cleanRepeatedSections,
+  needsContentReview,
+} from "../packages/content-quality";
+export const CAPTURE_VERSION = "public-text-v3";
 export function captureInput(input: InputDocument) {
   return documentSchema.parse({
     ...input,
@@ -65,13 +70,19 @@ export function publicHackerOneBody(
     };
   }
   const summaries = Array.isArray(data.summaries) ? data.summaries : [];
-  const text = summaries
-    .map((s: any) => (typeof s.content === "string" ? s.content : ""))
-    .filter(Boolean)
-    .join("\n\n");
+  const text = [
+    ...new Set(
+      summaries
+        .map((s: any) => (typeof s.content === "string" ? s.content : ""))
+        .map((s: string) => s.trim())
+        .filter(Boolean),
+    ),
+  ].join("\n\n");
   if (text.trim().length >= 80)
     return {
-      markdown: `## Public disclosure summary\n\n${text.trim()}`,
+      markdown: cleanRepeatedSections(
+        `## Public disclosure summary\n\n${text.trim()}`,
+      ).markdown,
       completeness: "partial",
     };
   throw new CaptureUnavailable("no_public_body");
@@ -98,7 +109,9 @@ export function articleBody(
   )
     throw new CaptureUnavailable("paywall");
   doc
-    .querySelectorAll("script,style,iframe,form,noscript,svg")
+    .querySelectorAll(
+      "script,style,iframe,form,noscript,svg,nav,[role=navigation],footer",
+    )
     .forEach((e) => e.remove());
   // Resolve references before Markdown conversion. This does not fetch linked resources.
   for (const element of doc.querySelectorAll("[href]")) {
@@ -131,7 +144,13 @@ export function articleBody(
     throw new CaptureUnavailable("insufficient_text");
   const markdown = markdownConverter.turndown(article.content).trim();
   if (markdown.length < 600) throw new CaptureUnavailable("insufficient_text");
-  return { markdown, completeness: "full" };
+  const quality = assessContent(markdown);
+  if (quality.issues.includes("navigation_text"))
+    throw new CaptureUnavailable("navigation_text");
+  return {
+    markdown,
+    completeness: needsContentReview(quality) ? "partial" : "full",
+  };
 }
 
 const rules = new Map<string, ReturnType<typeof robotsParser>>();

@@ -1,5 +1,9 @@
 import { z } from "zod";
 import { EMBEDDING_MODEL } from "./embeddings/config";
+import {
+  researchFilterShape,
+  validateResearchFilters,
+} from "./research-filters";
 export const safeUrl = z
   .string()
   .url()
@@ -30,6 +34,7 @@ export const documentSchema = z
     rightsEvidence: safeUrl,
     canArchive: z.boolean(),
     revision: z.string().max(200).optional(),
+    expectedRevisionId: z.string().uuid().optional(),
   })
   .superRefine((d, ctx) => {
     if ((!d.canArchive || d.completeness === "metadata") && d.markdown)
@@ -48,6 +53,7 @@ export type InputDocument = z.infer<typeof documentSchema>;
 export const searchSchema = z
   .object({
     q: z.string().max(300).default(""),
+    ...researchFilterShape,
     kind: z.enum(["", "report", "article", "paper"]).default(""),
     source: z.string().max(80).default(""),
     author: z.string().max(150).default(""),
@@ -72,6 +78,7 @@ export const searchSchema = z
       .optional(),
   })
   .superRefine((p, ctx) => {
+    validateResearchFilters(p, ctx);
     if (p.mode === "hybrid" && p.q.trim() && (!p.vector || !p.modelId))
       ctx.addIssue({
         code: "custom",
@@ -85,6 +92,8 @@ export const searchSchema = z
   });
 export type SearchInput = z.infer<typeof searchSchema>;
 export type Card = {
+  report_facts?: import("./report-facts").ReportFacts | null;
+  content_quality?: import("./content-quality").ContentQuality | null;
   id: string;
   title: string;
   canonical_url: string;

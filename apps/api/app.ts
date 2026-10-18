@@ -46,7 +46,7 @@ export function createApp(
     );
   });
   app.get("/api/health", (c) =>
-    c.json({ status: "ok", mode, version: "0.5.2", search: "hybrid-capable" }),
+    c.json({ status: "ok", mode, version: "0.6.0", search: "hybrid-capable" }),
   );
   app.get("/api/auth/config", async (c) => {
     c.header("Cache-Control", "no-store");
@@ -81,6 +81,10 @@ export function createApp(
     );
   });
   app.get("/api/stats", async (c) => c.json(await repository.stats()));
+  app.get("/api/search/facets", async (c) => {
+    c.header("Cache-Control", "public, max-age=300");
+    return c.json(await repository.rpc("hs_search_facets"));
+  });
   app.get("/api/search", async (c) => {
     const parsed = searchSchema.safeParse(c.req.query());
     if (!parsed.success)

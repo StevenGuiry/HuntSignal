@@ -484,8 +484,16 @@ it("preserves lexical results and scores when filtering before ranking", async (
       page: 1,
       limit: 50,
     };
-    expect(await local.rpc("hs_search", p)).toEqual(
-      await local.rpc("hs_test_legacy_search", p),
-    );
+    const current = await local.rpc<{
+      items: Record<string, unknown>[];
+      [key: string]: unknown;
+    }>("hs_search", p);
+    // New presentation fields do not alter legacy ranking, snippets or pagination.
+    expect({
+      ...current,
+      items: current.items.map(
+        ({ report_facts: _facts, content_quality: _quality, ...item }) => item,
+      ),
+    }).toEqual(await local.rpc("hs_test_legacy_search", p));
   }
 });

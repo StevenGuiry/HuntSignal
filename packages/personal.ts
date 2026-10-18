@@ -1,8 +1,13 @@
 import { z } from "zod";
 import { EMBEDDING_MODEL } from "./embeddings/config";
+import {
+  researchFilterShape,
+  validateResearchFilters,
+} from "./research-filters";
 const uuid = z.string().uuid();
 export const personalFilters = z
   .object({
+    ...researchFilterShape,
     kind: z.enum(["report", "article", "paper"]).optional(),
     source: z.string().min(1).max(80).optional(),
     topic: z.string().min(1).max(80).optional(),
@@ -11,7 +16,8 @@ export const personalFilters = z
     after: z.string().date().optional(),
     before: z.string().date().optional(),
   })
-  .strict();
+  .strict()
+  .superRefine(validateResearchFilters);
 const vector = z
   .array(z.number().finite())
   .length(384)
