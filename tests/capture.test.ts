@@ -139,6 +139,27 @@ it("does not fetch bodies disallowed by robots and leaves HTTP denials as captur
     }),
   ).rejects.toThrow("HTTP 403");
 });
+it("checks the destination robots policy before following a public-page redirect", async () => {
+  const mock = vi.mocked(safeFetch);
+  mock.mockReset();
+  mock.mockImplementation(
+    async (url, _hosts, _headers, _bytes, _redirects, beforeRequest) => {
+      if (url === "https://redirect.example/robots.txt")
+        return { status: 200, body: "" };
+      if (url === "https://www.redirect.example/robots.txt")
+        return { status: 200, body: "User-agent: *\nDisallow: /private" };
+      await beforeRequest?.(new URL(url));
+      await beforeRequest?.(new URL("https://www.redirect.example/private"));
+      return { status: 200, body: "<article>" + body + "</article>" };
+    },
+  );
+  await expect(
+    captureDocument({
+      ...base("redirect"),
+      canonicalUrl: "https://redirect.example/story",
+    }),
+  ).rejects.toThrow("robots_disallowed");
+});
 let local: Awaited<ReturnType<typeof openLocal>>;
 const objects = new Map<string, string>();
 const write = async (path: string, value: string) => {

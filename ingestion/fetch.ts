@@ -55,6 +55,7 @@ export type FetchResult = {
   status: number;
   body: string;
   contentType?: string;
+  url?: string;
   etag?: string;
   lastModified?: string;
 };
@@ -84,9 +85,11 @@ export async function safeFetch(
   headers: Record<string, string> = {},
   maxBytes = 12_000_000,
   redirects = 0,
+  beforeRequest?: (url: URL) => Promise<void>,
 ): Promise<FetchResult> {
   const url = validateFetchUrl(value, allowedHosts);
   if (redirects > 3) throw new Error("Too many redirects");
+  await beforeRequest?.(url);
   const response = await new Promise<{
     status: number;
     body: string;
@@ -155,6 +158,7 @@ export async function safeFetch(
       forwarded,
       maxBytes,
       redirects + 1,
+      beforeRequest,
     );
   }
   if (response.status === 429) {
@@ -172,6 +176,7 @@ export async function safeFetch(
     status: response.status,
     body: response.body,
     contentType: response.headers["content-type"],
+    url: url.href,
     etag: response.headers.etag,
     lastModified: response.headers["last-modified"],
   };

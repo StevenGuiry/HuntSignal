@@ -141,6 +141,26 @@ async function pace(host: string, delay = 1100) {
   if (wait > 0) await new Promise((r) => setTimeout(r, wait));
   lastRequest.set(host, Date.now());
 }
+async function crawlGate(url: URL, hosts: string[]) {
+  if (!rules.has(url.origin)) {
+    await pace(url.hostname);
+    let robots = "";
+    try {
+      robots = (await safeFetch(`${url.origin}/robots.txt`, hosts, {}, 250_000))
+        .body;
+    } catch (e) {
+      if (!(e instanceof SourceFetchError && e.status === 404))
+        throw new CaptureUnavailable("robots_unavailable");
+    }
+    rules.set(url.origin, robotsParser(`${url.origin}/robots.txt`, robots));
+  }
+  const robot = rules.get(url.origin)!;
+  if (robot.isAllowed(url.href, "HuntSignal") === false)
+    throw new CaptureUnavailable("robots_disallowed");
+  const delay = Math.max(1100, (robot.getCrawlDelay("HuntSignal") || 0) * 1000);
+  if (delay > 30000) throw new CaptureUnavailable("source_crawl_delay");
+  await pace(url.hostname, delay);
+}
 export async function captureDocument(
   input: InputDocument,
 ): Promise<InputDocument> {
@@ -163,29 +183,21 @@ export async function captureDocument(
       ? url.pathname.match(/^\/reports\/(\d+)\/?$/)
       : null;
   if (report) url.pathname = `/reports/${report[1]}.json`;
-  if (!rules.has(url.origin)) {
-    await pace(url.hostname);
-    let robots = "";
-    try {
-      robots = (await safeFetch(`${url.origin}/robots.txt`, hosts, {}, 250_000))
-        .body;
-    } catch (e) {
-      if (!(e instanceof SourceFetchError && e.status === 404))
-        throw new CaptureUnavailable("robots_unavailable");
-    }
-    rules.set(url.origin, robotsParser(`${url.origin}/robots.txt`, robots));
-  }
-  const robot = rules.get(url.origin)!;
-  if (robot.isAllowed(url.href, "HuntSignal") === false)
-    throw new CaptureUnavailable("robots_disallowed");
-  const delay = Math.max(1100, (robot.getCrawlDelay("HuntSignal") || 0) * 1000);
-  if (delay > 30000) throw new CaptureUnavailable("source_crawl_delay");
-  await pace(url.hostname, delay);
+  await crawlGate(url, hosts);
+  let firstRequest = true;
   const response = await safeFetch(
     url.href,
     hosts,
     report ? { Accept: "application/json" } : {},
     5_000_000,
+    0,
+    async (next) => {
+      if (firstRequest) {
+        firstRequest = false;
+        return;
+      }
+      await crawlGate(next, hosts);
+    },
   );
   if (
     !report &&
@@ -195,7 +207,7 @@ export async function captureDocument(
     throw new CaptureUnavailable("unsupported_content_type");
   const capture = report
     ? publicHackerOneBody(JSON.parse(response.body), report[1])
-    : articleBody(response.body, url.href);
+    : articleBody(response.body, response.url || url.href);
   return documentSchema.parse({
     ...doc,
     ...capture,
