@@ -1,6 +1,6 @@
 # HuntSignal
 
-A searchable library of public vulnerability write-ups and security research. Version 0.5.1 publishes entries only after substantive text is archived, and captures public reports/articles from their sources. Metadata-only discoveries remain internal candidates. See the [text capture policy](docs/text-capture.md), [Phase 5 source guide](docs/phase5.md) and [Phase 4 operations guide](docs/phase4.md). Optional accounts, private libraries and alerts are documented in [Phase 3](docs/phase3.md); keyword and semantic search are described in [Phase 2](docs/phase2.md).
+A searchable library of public vulnerability write-ups and security research. Version 0.5.2 adds [bounty and severity in report headers](docs/report-outcomes.md). HuntSignal publishes entries only after substantive text is archived, and captures public reports/articles from their sources. Metadata-only discoveries remain internal candidates. See the [text capture policy](docs/text-capture.md), [Phase 5 source guide](docs/phase5.md) and [Phase 4 operations guide](docs/phase4.md). Optional accounts, private libraries and alerts are documented in [Phase 3](docs/phase3.md); keyword and semantic search are described in [Phase 2](docs/phase2.md).
 
 ## Run locally
 
@@ -62,21 +62,21 @@ Custom imports must satisfy `packages/contracts.ts`. Text capture requires `canA
 
 ## Source coverage
 
-| Source                         | Implemented behavior                                                                                                              |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| OWASP Cheat Sheet Series / WSTG | Full Markdown under CC BY-SA 4.0, pinned to a Git commit; attribution and license visible in the reader                            |
-| Pentester Land                 | Public JSON index, original report/write-up links, authors, dates, tags; no automatic copying of third-party bodies               |
-| HackerOne                      | Hacktivity discovery followed by unauthenticated public JSON capture; full reports or explicitly partial public summaries          |
-| Bugcrowd                       | CrowdStream discovery followed by public summary capture; summaries are marked partial                                           |
-| Medium / PortSwigger Research  | Curated feeds followed by public HTML article extraction; blocked or gated pages remain pending                                  |
-| Intigriti / YesWeHack Research | Public research article extraction; dedicated platform submission-disclosure adapters remain unimplemented                       |
-| arXiv                          | Web-security papers with searchable CC0 abstracts marked partial; full papers linked at source                                   |
+| Source                          | Implemented behavior                                                                                                      |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| OWASP Cheat Sheet Series / WSTG | Full Markdown under CC BY-SA 4.0, pinned to a Git commit; attribution and license visible in the reader                   |
+| Pentester Land                  | Public JSON index, original report/write-up links, authors, dates, tags; no automatic copying of third-party bodies       |
+| HackerOne                       | Hacktivity discovery followed by unauthenticated public JSON capture; full reports or explicitly partial public summaries |
+| Bugcrowd                        | CrowdStream discovery followed by public summary capture; summaries are marked partial                                    |
+| Medium / PortSwigger Research   | Curated feeds followed by public HTML article extraction; blocked or gated pages remain pending                           |
+| Intigriti / YesWeHack Research  | Public research article extraction; dedicated platform submission-disclosure adapters remain unimplemented                |
+| arXiv                           | Web-security papers with searchable CC0 abstracts marked partial; full papers linked at source                            |
 
 Pentester Land is a historical index. Its last publication date is displayed through actual document data; a successful refresh does not mean it contains today's disclosures. OWASP publication dates remain unknown rather than substituting ingestion time. Newly indexed sorting is separate from newest publication sorting.
 
 ## Production on the proposed free stack
 
-1. Create a Supabase Free project. Apply the numbered SQL migrations in order, from `001_archive.sql` through `014_text_publication.sql`. Existing installations only need unapplied migrations. These create the archive/search, personal library, operations and text-publication controls. Migration 007 has an installation-specific GitHub admin bootstrap: forks must replace or remove that owner ID before applying it.
+1. Create a Supabase Free project. Apply the numbered SQL migrations in order, from `001_archive.sql` through `015_report_facts.sql`. Existing installations only need unapplied migrations. These create the archive/search, personal library, operations and text-publication controls. Migration 007 has an installation-specific GitHub admin bootstrap: forks must replace or remove that owner ID before applying it.
 2. Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in an ignored `.env` file in this workspace, or in the same terminal that runs ingestion. The CLI loads `.env` automatically; existing terminal/CI variables take precedence. `SUPABASE_URL` is the HTTPS project URL, not a Postgres connection string. The key setting accepts a legacy `service_role` JWT or a modern `sb_secret_` backend key. Keep it out of chat and browser code.
 
    ```powershell

@@ -62,6 +62,11 @@ jobs:
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         continue-on-error: true
         run: npm run capture -- --remote --limit 25
+      - name: Refresh public report outcomes
+        id: report_facts
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        continue-on-error: true
+        run: npm run reports:refresh -- --remote --limit 25
       - name: Prepare pinned model
         id: model
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
@@ -83,7 +88,7 @@ jobs:
         continue-on-error: true
         run: npm run ops -- housekeeping --remote
       - name: Report partial failures
-        if: ${{ !cancelled() && (steps.discovery.outcome == 'failure' || steps.capture.outcome == 'failure' || steps.model.outcome == 'failure' || steps.index.outcome == 'failure' || steps.alerts.outcome == 'failure' || steps.maintenance.outcome == 'failure') }}
+        if: ${{ !cancelled() && (steps.discovery.outcome == 'failure' || steps.capture.outcome == 'failure' || steps.report_facts.outcome == 'failure' || steps.model.outcome == 'failure' || steps.index.outcome == 'failure' || steps.alerts.outcome == 'failure' || steps.maintenance.outcome == 'failure') }}
         run: |
           echo 'One or more stages failed. Successful stages were retained; inspect the Operations page and failed step.'
           exit 1

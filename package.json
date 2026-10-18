@@ -1,6 +1,6 @@
 {
   "name": "huntsignal",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "private": true,
   "type": "module",
   "engines": {
@@ -21,6 +21,7 @@
     "test": "vitest run",
     "ingest": "tsx ingestion/cli.ts",
     "capture": "tsx ingestion/capture-cli.ts",
+    "reports:refresh": "tsx ingestion/report-facts-cli.ts",
     "config:check": "tsx ingestion/check-config.ts",
     "models:prepare": "tsx scripts/prepare-model.ts",
     "enrich": "tsx ingestion/enrich-cli.ts",

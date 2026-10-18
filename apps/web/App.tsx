@@ -35,6 +35,7 @@ import { AlertCenter, SaveSearch } from "./Alerts";
 import { Account } from "./Account";
 import { Operations, SourceHealthPanel } from "./Operations";
 import { RevisionHistory } from "./RevisionHistory";
+import { ReportFacts } from "./ReportFacts";
 import { CardPersonalActions, ReaderPersonal } from "./PersonalActions";
 import type { DocumentFlags } from "../../packages/personal";
 import { queryVector } from "./semantic";
@@ -585,6 +586,7 @@ export default function App() {
                     <span>·</span>
                     {date(detail.published_at)}
                   </div>
+                  <ReportFacts kind={detail.kind} facts={detail.report_facts} />
                   <div className="reader-actions">
                     <a
                       className="primary-button"

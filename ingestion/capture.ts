@@ -161,11 +161,8 @@ async function crawlGate(url: URL, hosts: string[]) {
   if (delay > 30000) throw new CaptureUnavailable("source_crawl_delay");
   await pace(url.hostname, delay);
 }
-export async function captureDocument(
-  input: InputDocument,
-): Promise<InputDocument> {
-  const doc = captureInput(input);
-  const url = new URL(doc.canonicalUrl);
+export async function fetchPublicSource(canonicalUrl: string) {
+  const url = new URL(canonicalUrl);
   if (/\.(pdf|zip|gz|png|jpe?g|gif|webp|mp4|docx?)$/i.test(url.pathname))
     throw new CaptureUnavailable("unsupported_content_type");
   url.protocol = "https:";
@@ -205,8 +202,15 @@ export async function captureDocument(
     !/text\/html|application\/xhtml\+xml/i.test(response.contentType)
   )
     throw new CaptureUnavailable("unsupported_content_type");
-  const capture = report
-    ? publicHackerOneBody(JSON.parse(response.body), report[1])
+  return { response, reportId: report?.[1], url };
+}
+export async function captureDocument(
+  input: InputDocument,
+): Promise<InputDocument> {
+  const doc = captureInput(input);
+  const { response, reportId, url } = await fetchPublicSource(doc.canonicalUrl);
+  const capture = reportId
+    ? publicHackerOneBody(JSON.parse(response.body), reportId)
     : articleBody(response.body, response.url || url.href);
   return documentSchema.parse({
     ...doc,
