@@ -16,6 +16,7 @@ export async function ingestDocument(
     jobToken: string;
     sourceToken: string;
   },
+  submission?: { id: string; token: string; sourceToken: string },
 ) {
   const document = prepare(input);
   const check = await rpc<{
@@ -63,6 +64,13 @@ export async function ingestDocument(
   }>("hs_ingest", {
     ...document,
     changes,
+    ...(submission
+      ? {
+          manualSubmissionId: submission.id,
+          manualSubmissionToken: submission.token,
+          manualSourceToken: submission.sourceToken,
+        }
+      : {}),
     ...(claim
       ? {
           jobSourceId: claim.sourceId,

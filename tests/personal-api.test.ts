@@ -58,6 +58,45 @@ it("requires verified user sessions and never caches private responses", async (
   }
   expect(backend.rpc).not.toHaveBeenCalled();
 });
+it("accepts only validated URL actions and cannot inject preview content or approval identity", async () => {
+  const { request, calls } = setup();
+  expect(
+    (
+      await request("/operations/submissions", {
+        action: "request",
+        url: "https://example.org/?token=secret",
+        kind: "article",
+      })
+    ).status,
+  ).toBe(400);
+  expect(
+    (
+      await request("/operations/submissions", {
+        action: "approve",
+        id: searchId,
+        approvedBy: userId,
+      })
+    ).status,
+  ).toBe(400);
+  expect(calls).toHaveLength(0);
+  expect(
+    (
+      await request("/operations/submissions", {
+        action: "request",
+        url: "https://www.hackerone.com/reports/123/?utm_source=example",
+        kind: "report",
+      })
+    ).status,
+  ).toBe(200);
+  expect(calls[0]).toEqual({
+    name: "hs_me_submission",
+    p: {
+      action: "request",
+      url: "https://hackerone.com/reports/123",
+      kind: "report",
+    },
+  });
+});
 it("blocks cross-origin writes and client-supplied ownership", async () => {
   const { app, request, calls } = setup();
   expect(

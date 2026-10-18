@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Activity, RefreshCw, ShieldCheck } from "lucide-react";
 import { useAuth, SignInGate } from "./auth";
+import { Submissions } from "./Submissions";
 type SourceHealth = {
   source_id: string;
   name: string;
@@ -97,7 +98,12 @@ export function SourceHealthPanel() {
       {data && (
         <div className="health-grid">
           {data.sources
-            .filter((s) => s.source_id !== "fulltext-capture")
+            .filter(
+              (s) =>
+                !["fulltext-capture", "manual-submissions"].includes(
+                  s.source_id,
+                ),
+            )
             .map((s) => (
               <div key={s.source_id}>
                 <strong>{s.name}</strong>
@@ -207,6 +213,7 @@ function SignedOperations({ onOpen }: { onOpen: (id: string) => void }) {
             {data.awaitingCapture || 0} discovered pages await substantive
             source text. They are excluded from public browsing and search.
           </p>
+          <Submissions onOpen={onOpen} />
           {(data.capacity.warning || data.capacity.unknownObjects > 0) && (
             <p className="error-box">
               Capacity needs attention. Backfill and archive writes pause before
@@ -234,7 +241,9 @@ function SignedOperations({ onOpen }: { onOpen: (id: string) => void }) {
                   <h3>
                     {s.source_id === "fulltext-capture"
                       ? "Archive text capture"
-                      : s.name}
+                      : s.source_id === "manual-submissions"
+                        ? "Manual source submissions"
+                        : s.name}
                   </h3>
                   <p>
                     {s.status} · {s.pending} pending · {s.failed} failed

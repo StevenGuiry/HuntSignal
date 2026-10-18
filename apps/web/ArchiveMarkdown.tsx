@@ -97,6 +97,7 @@ export function ArchiveMarkdown({
   owner = "guest",
   passage = "",
   quality,
+  preview = false,
 }: {
   markdown: string;
   originalUrl: string;
@@ -105,6 +106,7 @@ export function ArchiveMarkdown({
   owner?: string;
   passage?: string;
   quality?: ContentQuality | null;
+  preview?: boolean;
 }) {
   const root = useRef<HTMLDivElement>(null);
   const positionEnabled = useRef(true);
@@ -240,64 +242,66 @@ export function ArchiveMarkdown({
           </p>
         </aside>
       )}
-      <section className="reader-tools" aria-label="Reading tools">
-        {!!headings.length && (
-          <details>
-            <summary>Contents · {headings.length} sections</summary>
-            <nav aria-label="Report contents">
-              {headings.map((h) => (
-                <button
-                  key={h.id}
-                  className={h.level > 2 ? "nested-heading" : ""}
-                  onClick={() => jump(h.id)}
-                >
-                  {h.title}
-                </button>
-              ))}
-            </nav>
-          </details>
-        )}
-        {resume && (
-          <button
-            className="secondary-button"
-            title={resume.label}
-            onClick={() => jump(resume.anchor)}
-          >
-            Resume reading
-          </button>
-        )}
-        {documentId && (
-          <button
-            className="reading-reset"
-            onClick={() => {
-              try {
-                positionEnabled.current = false;
-                const old = JSON.parse(
-                  localStorage.getItem(storageKey) || "[]",
-                );
-                localStorage.setItem(
-                  storageKey,
-                  JSON.stringify(
-                    Array.isArray(old)
-                      ? old.filter(
-                          (p: ReadingPosition) => p.documentId !== documentId,
-                        )
-                      : [],
-                  ),
-                );
-                setResume(null);
-                setMessage("Saved position cleared on this device.");
-              } catch {
-                setMessage("Browser storage is unavailable.");
-              }
-            }}
-          >
-            Clear saved position
-          </button>
-        )}
-        <small>Reading position stays on this device.</small>
-        {message && <p role="status">{message}</p>}
-      </section>
+      {!preview && (
+        <section className="reader-tools" aria-label="Reading tools">
+          {!!headings.length && (
+            <details>
+              <summary>Contents · {headings.length} sections</summary>
+              <nav aria-label="Report contents">
+                {headings.map((h) => (
+                  <button
+                    key={h.id}
+                    className={h.level > 2 ? "nested-heading" : ""}
+                    onClick={() => jump(h.id)}
+                  >
+                    {h.title}
+                  </button>
+                ))}
+              </nav>
+            </details>
+          )}
+          {resume && (
+            <button
+              className="secondary-button"
+              title={resume.label}
+              onClick={() => jump(resume.anchor)}
+            >
+              Resume reading
+            </button>
+          )}
+          {documentId && (
+            <button
+              className="reading-reset"
+              onClick={() => {
+                try {
+                  positionEnabled.current = false;
+                  const old = JSON.parse(
+                    localStorage.getItem(storageKey) || "[]",
+                  );
+                  localStorage.setItem(
+                    storageKey,
+                    JSON.stringify(
+                      Array.isArray(old)
+                        ? old.filter(
+                            (p: ReadingPosition) => p.documentId !== documentId,
+                          )
+                        : [],
+                    ),
+                  );
+                  setResume(null);
+                  setMessage("Saved position cleared on this device.");
+                } catch {
+                  setMessage("Browser storage is unavailable.");
+                }
+              }}
+            >
+              Clear saved position
+            </button>
+          )}
+          <small>Reading position stays on this device.</small>
+          {message && <p role="status">{message}</p>}
+        </section>
+      )}
       <div className="markdown" ref={root}>
         <Markdown
           remarkPlugins={[remarkGfm]}

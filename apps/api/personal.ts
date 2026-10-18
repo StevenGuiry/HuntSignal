@@ -5,6 +5,7 @@ import { RpcError } from "../../packages/repository";
 import { backendHeaders } from "../../packages/supabase";
 import { libraryMutation, savedSearchInput } from "../../packages/personal";
 import { expandQuery, expandNaturalQuery } from "../../packages/taxonomy";
+import { submissionInput } from "../../packages/submissions";
 export type AuthUser = {
   id: string;
   email?: string;
@@ -203,6 +204,25 @@ export function personalApi(backend: AccountBackend | undefined) {
   app.get("/operations", async (c) =>
     c.json(await c.get("userRpc")("hs_me_ops")),
   );
+  app.get("/operations/submissions", async (c) =>
+    c.json(await c.get("userRpc")("hs_me_submissions")),
+  );
+  app.post("/operations/submissions", async (c) => {
+    const parsed = submissionInput.safeParse(
+      await c.req.json().catch(() => null),
+    );
+    if (!parsed.success)
+      return c.json(
+        {
+          error: {
+            message:
+              parsed.error.issues[0]?.message || "Invalid source submission.",
+          },
+        },
+        400,
+      );
+    return c.json(await c.get("userRpc")("hs_me_submission", parsed.data));
+  });
   app.post("/operations", async (c) => {
     const id = z.string().min(1).max(120),
       reason = z.string().trim().min(5).max(500);

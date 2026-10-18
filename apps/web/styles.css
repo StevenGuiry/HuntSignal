@@ -1058,6 +1058,89 @@ h1 {
   margin: 4px 0 16px;
   background: #fff;
 }
+.source-submissions {
+  margin: 24px 0;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.source-submissions > p,
+.submission-preview > p {
+  font-size: 13px;
+  line-height: 1.65;
+}
+.submission-form {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 18px 0;
+}
+.submission-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 12px;
+}
+.submission-form label:first-child {
+  flex: 1 1 300px;
+}
+.submission-form input,
+.submission-form select {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: #fafbf8;
+  padding: 10px;
+}
+.submission-list {
+  display: grid;
+  gap: 8px;
+  max-height: 360px;
+  overflow: auto;
+}
+.submission-list article {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+}
+.submission-list article.selected {
+  border-color: #789a58;
+}
+.submission-list article > button:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+  width: 100%;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+.submission-list span {
+  color: #52604f;
+  font-size: 11px;
+}
+.submission-preview {
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.submission-preview > a,
+.submission-preview .quality-notice button {
+  text-decoration: underline;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.submission-body {
+  max-height: 520px;
+  overflow: auto;
+  margin-bottom: 18px;
+}
+.submission-body .markdown {
+  padding: 18px;
+}
 .research-filters summary,
 .reader-tools summary {
   cursor: pointer;
