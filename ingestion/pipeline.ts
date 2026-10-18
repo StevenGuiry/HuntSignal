@@ -24,7 +24,7 @@ export async function ingestDocument(
     previousPath?: string;
   }>("hs_ops_preflight", document);
   if (check.action !== "write") {
-    if (check.action === "preserved")
+    if (check.action === "preserved" && document.completeness !== "metadata")
       await rpc("hs_ops_review", {
         sourceId: document.sourceId,
         documentId: check.id,

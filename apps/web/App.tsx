@@ -777,8 +777,8 @@ export default function App() {
                       icon={<BookOpen size={17} />}
                     />
                     <Stat
-                      label="METADATA ONLY"
-                      value={stats?.metadata}
+                      label="READABLE ENTRIES"
+                      value={stats?.total}
                       icon={<FileText size={17} />}
                     />
                   </div>
@@ -805,10 +805,6 @@ export default function App() {
                           <div>
                             <b>{s.partial || 0}</b>
                             <span>partial text</span>
-                          </div>
-                          <div>
-                            <b>{s.metadata || 0}</b>
-                            <span>metadata only</span>
                           </div>
                         </div>
                         <div className="source-status">
@@ -870,8 +866,9 @@ export default function App() {
                     <p>
                       Coverage is explicit: licensed articles retain full text;
                       abstracts and permitted feed excerpts are marked partial.
-                      Metadata-only entries link to the original report or
-                      article. Research blogs are distinct from platform report
+                      Entries appear here after substantive source text is
+                      archived. Unavailable pages remain in the capture queue.
+                      Research blogs are distinct from platform report
                       disclosures.
                     </p>
                   </div>
@@ -1065,7 +1062,6 @@ export default function App() {
                   >
                     <option value="">All availability</option>
                     <option value="full">Full text archived</option>
-                    <option value="metadata">Metadata only</option>
                     <option value="partial">Partial text</option>
                   </select>
                 </label>

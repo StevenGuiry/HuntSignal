@@ -17,6 +17,7 @@ type SourceHealth = {
 };
 type Health = {
   sources: SourceHealth[];
+  awaitingCapture?: number;
   indexPending: number;
   lastBackup: string | null;
 };
@@ -95,30 +96,32 @@ export function SourceHealthPanel() {
       </div>
       {data && (
         <div className="health-grid">
-          {data.sources.map((s) => (
-            <div key={s.source_id}>
-              <strong>{s.name}</strong>
-              <span className={`health-status ${s.status}`}>{s.status}</span>
-              <dl>
-                <dt>Last check</dt>
-                <dd>{time(s.last_attempt_at)}</dd>
-                <dt>Last success</dt>
-                <dd>{time(s.last_success_at)}</dd>
-                <dt>Latest publication</dt>
-                <dd>{time(s.latest_publication)}</dd>
-                <dt>Polling interval</dt>
-                <dd>
-                  {s.poll_seconds >= 86400
-                    ? `${Math.round(s.poll_seconds / 86400)} day(s)`
-                    : `${Math.round(s.poll_seconds / 3600)} hours`}
-                </dd>
-                <dt>Pending / failed</dt>
-                <dd>
-                  {s.pending} / {s.failed}
-                </dd>
-              </dl>
-            </div>
-          ))}
+          {data.sources
+            .filter((s) => s.source_id !== "fulltext-capture")
+            .map((s) => (
+              <div key={s.source_id}>
+                <strong>{s.name}</strong>
+                <span className={`health-status ${s.status}`}>{s.status}</span>
+                <dl>
+                  <dt>Last check</dt>
+                  <dd>{time(s.last_attempt_at)}</dd>
+                  <dt>Last success</dt>
+                  <dd>{time(s.last_success_at)}</dd>
+                  <dt>Latest publication</dt>
+                  <dd>{time(s.latest_publication)}</dd>
+                  <dt>Polling interval</dt>
+                  <dd>
+                    {s.poll_seconds >= 86400
+                      ? `${Math.round(s.poll_seconds / 86400)} day(s)`
+                      : `${Math.round(s.poll_seconds / 3600)} hours`}
+                  </dd>
+                  <dt>Pending / failed</dt>
+                  <dd>
+                    {s.pending} / {s.failed}
+                  </dd>
+                </dl>
+              </div>
+            ))}
         </div>
       )}
       <p className="semantic-note">
@@ -200,6 +203,10 @@ function SignedOperations({ onOpen }: { onOpen: (id: string) => void }) {
               <strong>{time(data.lastBackup)}</strong>
             </div>
           </div>
+          <p className="semantic-note">
+            {data.awaitingCapture || 0} discovered pages await substantive
+            source text. They are excluded from public browsing and search.
+          </p>
           {(data.capacity.warning || data.capacity.unknownObjects > 0) && (
             <p className="error-box">
               Capacity needs attention. Backfill and archive writes pause before
@@ -224,7 +231,11 @@ function SignedOperations({ onOpen }: { onOpen: (id: string) => void }) {
             {data.sources.map((s) => (
               <article key={s.source_id}>
                 <div>
-                  <h3>{s.name}</h3>
+                  <h3>
+                    {s.source_id === "fulltext-capture"
+                      ? "Archive text capture"
+                      : s.name}
+                  </h3>
                   <p>
                     {s.status} · {s.pending} pending · {s.failed} failed
                   </p>

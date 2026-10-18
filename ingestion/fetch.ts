@@ -54,6 +54,7 @@ export function validateFetchUrl(value: string, allowedHosts: string[]) {
 export type FetchResult = {
   status: number;
   body: string;
+  contentType?: string;
   etag?: string;
   lastModified?: string;
 };
@@ -96,7 +97,7 @@ export async function safeFetch(
       {
         signal: AbortSignal.timeout(30000),
         headers: {
-          "User-Agent": "HuntSignal/0.1 public-research-archive",
+          "User-Agent": "HuntSignal/0.5.1 public-research-archive",
           "Accept-Encoding": "identity",
           ...headers,
         },
@@ -170,6 +171,7 @@ export async function safeFetch(
   return {
     status: response.status,
     body: response.body,
+    contentType: response.headers["content-type"],
     etag: response.headers.etag,
     lastModified: response.headers["last-modified"],
   };

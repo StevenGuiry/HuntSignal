@@ -1,6 +1,6 @@
 {
   "name": "huntsignal",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "private": true,
   "type": "module",
   "engines": {
@@ -20,6 +20,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "ingest": "tsx ingestion/cli.ts",
+    "capture": "tsx ingestion/capture-cli.ts",
     "config:check": "tsx ingestion/check-config.ts",
     "models:prepare": "tsx scripts/prepare-model.ts",
     "enrich": "tsx ingestion/enrich-cli.ts",
@@ -33,6 +34,7 @@
     "smoke:phase3": "tsx scripts/smoke-phase3.ts",
     "smoke:phase4": "tsx scripts/smoke-phase4.ts",
     "smoke:phase5": "tsx scripts/smoke-phase5.ts",
+    "smoke:capture": "tsx scripts/smoke-capture.ts",
     "format": "prettier --write apps packages ingestion scripts tests *.ts *.json *.jsonc *.md docs",
     "deploy": "npm run build && wrangler deploy",
     "deploy:check": "npm run build && wrangler deploy --dry-run"
@@ -52,12 +54,15 @@
     "react-dom": "^19.2.0",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
+    "robots-parser": "^3.0.1",
+    "turndown": "^7.2.4",
     "zod": "^4.1.0"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
+    "@types/turndown": "^5.0.6",
     "@vitejs/plugin-react": "^5.0.0",
     "libsodium-wrappers": "^0.8.4",
     "prettier": "^3.9.10",

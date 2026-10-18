@@ -82,7 +82,7 @@ export function applyPrivacy(
   ledger: PrivacyLedger,
   includePersonal: boolean,
 ): Snapshot {
-  if (snapshot.formatVersion !== 2 || snapshot.schemaVersion > 9)
+  if (snapshot.formatVersion !== 2 || snapshot.schemaVersion > 14)
     throw new Error("Unsupported backup format");
   if (!Number.isFinite(Date.parse(snapshot.createdAt)))
     throw new Error("Invalid snapshot timestamp");

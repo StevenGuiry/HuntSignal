@@ -39,7 +39,11 @@ export async function runSource(
   read: ObjectReader,
   sourceId: string,
   discover: (context: DiscoveryContext) => AsyncIterable<InputDocument>,
-  options: { mode?: "recent" | "backfill"; force?: boolean } = {},
+  options: {
+    mode?: "recent" | "backfill";
+    force?: boolean;
+    jobKey?: (document: InputDocument) => string;
+  } = {},
 ) {
   const mode = options.mode || "recent";
   if (mode === "backfill") {
@@ -164,12 +168,13 @@ export async function runSource(
     for await (const candidate of discover(context)) {
       if (lost) throw new Error("Source lease lost");
       const doc = documentSchema.parse(candidate);
+      const externalId = options.jobKey?.(doc) || doc.externalId;
       const queued = await rpc<{ accepted: boolean; unchanged?: boolean }>(
         "hs_ops_job",
         {
           action: "enqueue",
           sourceId,
-          externalId: doc.externalId,
+          externalId,
           document: doc,
           fingerprint: prepare(doc).contentHash,
         },
@@ -177,7 +182,7 @@ export async function runSource(
       if (!queued.accepted)
         throw new Error("Document is leased by another worker");
       context.lastDocumentChanged = !queued.unchanged;
-      if (!queued.unchanged) await processJob(doc.externalId);
+      if (!queued.unchanged) await processJob(externalId);
     }
   } catch (e) {
     counts.failed++;

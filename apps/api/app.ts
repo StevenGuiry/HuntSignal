@@ -46,7 +46,7 @@ export function createApp(
     );
   });
   app.get("/api/health", (c) =>
-    c.json({ status: "ok", mode, version: "0.5.0", search: "hybrid-capable" }),
+    c.json({ status: "ok", mode, version: "0.5.1", search: "hybrid-capable" }),
   );
   app.get("/api/auth/config", async (c) => {
     c.header("Cache-Control", "no-store");

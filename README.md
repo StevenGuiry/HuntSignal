@@ -1,6 +1,6 @@
 # HuntSignal
 
-A searchable library of public vulnerability write-ups and security research. Version 0.5 expands to ten configured sources, licensed WSTG full text, research abstracts, direct Bugcrowd disclosure discovery, curated blogs and explicit preservation coverage. See the [Phase 5 source guide](docs/phase5.md) and [Phase 4 operations guide](docs/phase4.md). Optional GitHub accounts, private libraries and alerts are documented in [Phase 3](docs/phase3.md); keyword and semantic search are described in [Phase 2](docs/phase2.md).
+A searchable library of public vulnerability write-ups and security research. Version 0.5.1 publishes entries only after substantive text is archived, and captures public reports/articles from their sources. Metadata-only discoveries remain internal candidates. See the [text capture policy](docs/text-capture.md), [Phase 5 source guide](docs/phase5.md) and [Phase 4 operations guide](docs/phase4.md). Optional accounts, private libraries and alerts are documented in [Phase 3](docs/phase3.md); keyword and semantic search are described in [Phase 2](docs/phase2.md).
 
 ## Run locally
 
@@ -10,13 +10,14 @@ Requires Node.js 24 and npm. Docker and cloud accounts are not needed for the lo
 npm ci
 npm run models:prepare
 npm run pilot
+npm run capture -- --limit 25
 npm run enrich
 npm run dev
 ```
 
 Open **http://localhost:5173**. The persistent embedded PostgreSQL database lives in `.data/postgres`; immutable compressed content lives in `.data/archive`. These are ignored by Git. **Stop the dev server before running ingestion or exports:** PGlite has one local owner. A process lock prevents two commands from opening it concurrently.
 
-The pilot imports **100 full-text OWASP research articles and 400 public write-up/report metadata entries from Pentester Land**, sampled across historical dates. It does not fabricate reports or claim that metadata entries have archived bodies. Every card and reader shows its preservation status and original source. Re-running the pilot is idempotent. Source availability can reduce counts; inspect the CLI summary and Sources screen.
+The pilot discovers **100 full-text OWASP research articles and 400 historical write-up/report candidates**. Only entries with substantive archived text appear publicly. Run capture to retrieve accessible original bodies; unavailable or blocked pages stay in the internal retry queue. Every public card and reader shows its preservation status and original source. Re-running discovery/capture is idempotent.
 
 Search `XSS` or `cross-site scripting`: both expand to the same canonical concept. Select **Search by meaning** for natural language such as `account takeover through OAuth mistakes`. Keyword results appear immediately while the local browser model loads, then semantic suggestions are blended in. Filters apply to both retrieval paths. **Keywords & synonyms** keeps complete lexical pagination; semantic results are a bounded ranked set. Accounts require the Supabase/GitHub setup linked above; public browsing remains available without sign-in.
 
@@ -33,6 +34,7 @@ npm run ops -- housekeeping --remote # Run retention and withdrawal cleanup
 npm run ingest -- backfill --remote --source hackerone --limit 100
 npm run ingest -- refresh --remote --source bugcrowd --limit 25
 npm run ingest -- refresh --remote --source owasp-wstg --limit 150
+npm run capture -- --remote --limit 25 # Capture public source text before publication
 npx tsx scripts/check-sources.ts     # Three real samples per new source, no archive writes
 npm run backup:hosted               # Encrypted hosted snapshot + incremental objects
 npm run backup:restore -- --from SNAPSHOT --target NEW_DIRECTORY
@@ -56,7 +58,7 @@ npm run build
 npm run deploy:check                 # Bundle the Worker without deploying
 ```
 
-Custom imports must satisfy `packages/contracts.ts`. Full text requires `canArchive: true`, a license/permission evidence URL, attribution, and a non-empty body. RSS defaults to metadata unless the source configuration records permission; RSS bodies are marked partial because feeds may truncate stories. Never put account secrets in source-controlled feed configuration.
+Custom imports must satisfy `packages/contracts.ts`. Text capture requires `canArchive: true`, source/license provenance, attribution and substantive body text. This operator approval is not a copyright license. RSS discovers candidates by default; the capture worker retrieves public article bodies, while permitted feed excerpts remain explicitly partial. Never put account secrets in source-controlled feed configuration.
 
 ## Source coverage
 
@@ -64,17 +66,17 @@ Custom imports must satisfy `packages/contracts.ts`. Full text requires `canArch
 | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
 | OWASP Cheat Sheet Series / WSTG | Full Markdown under CC BY-SA 4.0, pinned to a Git commit; attribution and license visible in the reader                            |
 | Pentester Land                 | Public JSON index, original report/write-up links, authors, dates, tags; no automatic copying of third-party bodies               |
-| HackerOne                      | Authenticated Hacktivity discovery, public disclosed metadata only; verified with ten recent reports using configured credentials |
-| Bugcrowd                       | Public CrowdStream disclosure metadata; undisclosed activity excluded                                                            |
-| Medium / PortSwigger Research  | Curated InfoSec Write-ups and PortSwigger feeds; metadata, authors and original links                                              |
-| Intigriti / YesWeHack Research | Public research articles; dedicated platform submission-disclosure adapters are not implemented                                  |
+| HackerOne                      | Hacktivity discovery followed by unauthenticated public JSON capture; full reports or explicitly partial public summaries          |
+| Bugcrowd                       | CrowdStream discovery followed by public summary capture; summaries are marked partial                                           |
+| Medium / PortSwigger Research  | Curated feeds followed by public HTML article extraction; blocked or gated pages remain pending                                  |
+| Intigriti / YesWeHack Research | Public research article extraction; dedicated platform submission-disclosure adapters remain unimplemented                       |
 | arXiv                          | Web-security papers with searchable CC0 abstracts marked partial; full papers linked at source                                   |
 
 Pentester Land is a historical index. Its last publication date is displayed through actual document data; a successful refresh does not mean it contains today's disclosures. OWASP publication dates remain unknown rather than substituting ingestion time. Newly indexed sorting is separate from newest publication sorting.
 
 ## Production on the proposed free stack
 
-1. Create a Supabase Free project. Apply the numbered SQL migrations in order, from `001_archive.sql` through `013_source_precedence.sql`. Existing installations only need unapplied migrations. These create the archive/search, personal library and operations schemas. Migration 007 has an installation-specific GitHub admin bootstrap: forks must replace or remove that owner ID before applying it.
+1. Create a Supabase Free project. Apply the numbered SQL migrations in order, from `001_archive.sql` through `014_text_publication.sql`. Existing installations only need unapplied migrations. These create the archive/search, personal library, operations and text-publication controls. Migration 007 has an installation-specific GitHub admin bootstrap: forks must replace or remove that owner ID before applying it.
 2. Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in an ignored `.env` file in this workspace, or in the same terminal that runs ingestion. The CLI loads `.env` automatically; existing terminal/CI variables take precedence. `SUPABASE_URL` is the HTTPS project URL, not a Postgres connection string. The key setting accepts a legacy `service_role` JWT or a modern `sb_secret_` backend key. Keep it out of chat and browser code.
 
    ```powershell

@@ -1,5 +1,7 @@
 # Phase 5: source expansion and preservation coverage
 
+**Current publication policy:** [Version 0.5.1](text-capture.md) excludes metadata-only records from public browsing/search and captures source text before publication. The first-rollout figures below describe the earlier discovery catalog; they are not the current readable-entry count.
+
 HuntSignal 0.5 expands discovery to ten sources, adds full-text OWASP WSTG chapters and searchable research abstracts, and exposes preservation counts and a Papers filter. The first rollout targets 1,000 unique documents; expansion toward 2,000 follows measured database growth and search evaluation. The operator accepted a three-to-four-hour feed cadence on 18 October 2026; the workflow now explicitly requests every four hours. GitHub can delay scheduled runs.
 
 ## Architecture and source contracts

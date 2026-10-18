@@ -57,6 +57,11 @@ jobs:
           HACKERONE_USERNAME: ${{ secrets.HACKERONE_USERNAME }}
           HACKERONE_API_TOKEN: ${{ secrets.HACKERONE_API_TOKEN }}
         run: npm run ingest -- "$INGEST_MODE" --remote --limit "$INGEST_LIMIT" --source "$INGEST_SOURCE"
+      - name: Capture public source text
+        id: capture
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        continue-on-error: true
+        run: npm run capture -- --remote --limit 25
       - name: Prepare pinned model
         id: model
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
@@ -78,7 +83,7 @@ jobs:
         continue-on-error: true
         run: npm run ops -- housekeeping --remote
       - name: Report partial failures
-        if: ${{ !cancelled() && (steps.discovery.outcome == 'failure' || steps.model.outcome == 'failure' || steps.index.outcome == 'failure' || steps.alerts.outcome == 'failure' || steps.maintenance.outcome == 'failure') }}
+        if: ${{ !cancelled() && (steps.discovery.outcome == 'failure' || steps.capture.outcome == 'failure' || steps.model.outcome == 'failure' || steps.index.outcome == 'failure' || steps.alerts.outcome == 'failure' || steps.maintenance.outcome == 'failure') }}
         run: |
           echo 'One or more stages failed. Successful stages were retained; inspect the Operations page and failed step.'
           exit 1

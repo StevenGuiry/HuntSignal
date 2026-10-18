@@ -353,10 +353,18 @@ it("prefers direct sources over directory metadata without duplicate IDs or revi
       title: "Changed directory title",
     }),
   ).toMatchObject({ id: first.id, action: "unchanged" });
-  expect(await local.rpc("hs_detail", { id: first.id })).toMatchObject({
+  expect(await local.rpc("hs_detail", { id: first.id })).toBeNull();
+  expect(
+    (
+      await local.db.query(
+        "select source_id,title,status from hs_documents where id=$1",
+        [first.id],
+      )
+    ).rows[0],
+  ).toMatchObject({
     source_id: "bugcrowd",
     title: "Direct title",
-    revision_count: 2,
+    status: "pending",
   });
 });
 it("preserves partial text against metadata downgrades, including a later lower-quality source", async () => {

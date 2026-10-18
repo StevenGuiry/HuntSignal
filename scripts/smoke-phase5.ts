@@ -6,10 +6,14 @@ async function get(path: string) {
   return r.json();
 }
 const health = await get("/api/health");
-assert.equal(health.version, "0.5.0");
+assert.ok(["0.5.0", "0.5.1"].includes(health.version));
 const stats = await get("/api/stats");
 assert.equal(stats.full + stats.partial + stats.metadata, stats.total);
 assert.ok(stats.papers >= 1);
+if (health.version === "0.5.1") {
+  assert.equal(stats.metadata, 0);
+  assert.equal((await get("/api/search?completeness=metadata")).total, 0);
+}
 const sources = await get("/api/sources");
 for (const id of [
   "owasp-wstg",
@@ -18,7 +22,6 @@ for (const id of [
   "portswigger-research",
   "intigriti-research",
   "yeswehack-research",
-  "infosec-writeups",
 ])
   assert.ok(
     sources.some((s: any) => s.id === id && s.documents > 0),

@@ -78,7 +78,7 @@ describe("archive and production SQL search", () => {
       }),
     );
     const xss = await search("XSS");
-    expect(xss.total).toBe(2);
+    expect(xss.total).toBe(1);
     expect(
       (await search("cross-site scripting")).items.map((d) => d.id),
     ).toEqual(xss.items.map((d) => d.id));
