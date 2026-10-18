@@ -1,0 +1,57 @@
+[
+  {
+    "q": "detecting broken access control vulnerabilities in web applications",
+    "title": "ABSENTIA: Detecting Broken Access Control Vulnerabilities in Web Applications",
+    "kind": "natural"
+  },
+  {
+    "q": "browser agents approving unauthorized account access after prompt injection",
+    "title": "The Agent Clicks Approve: Injected Page Text Makes Browser Agents Authorize Access the Task Never Named",
+    "kind": "natural"
+  },
+  {
+    "q": "CSRF vulnerabilities in GLOBE social networking",
+    "title": "Multiple CSRF Vulnerabilities in GLOBE Social Networking Portlet",
+    "kind": "keyword"
+  },
+  {
+    "q": "stored cross-site scripting when selecting a team filter",
+    "title": "Stored XSS triggered when selecting team filter",
+    "kind": "natural"
+  },
+  {
+    "q": "unauthenticated remote code execution Trick Variable Server",
+    "title": "Unauthenticated Remote Code Execution (RCE) via Trick Variable Server",
+    "kind": "keyword"
+  },
+  {
+    "q": "hacking AI customer service agents",
+    "title": "Hacking AI customer service agents",
+    "kind": "natural"
+  },
+  {
+    "q": "NAT64 SSRF bypass",
+    "title": "How I Tricked OpenClaw Into Attacking Its Own Network: A NAT64 SSRF Bypass",
+    "kind": "keyword"
+  },
+  {
+    "q": "error based SQL injection database schema authenticating portal",
+    "title": "From Bug to Schema: Exploring Error-Based SQL Injection on an Authenticating Portal",
+    "kind": "natural"
+  },
+  {
+    "q": "HTTP/3 Burp Suite wordlist",
+    "title": "HTTP/3 in Burp Suite - it’s time to find a bigger wordlist",
+    "kind": "keyword"
+  },
+  {
+    "q": "compare Codex Claude Code Gemini CLI bug bounty lab results",
+    "title": "Codex vs Claude Code vs Gemini CLI: Bug Bounty lab results compared",
+    "kind": "natural"
+  },
+  {
+    "q": "using search engines to find information leakage",
+    "title": "Conduct Search Engine Reconnaissance for Information Leakage",
+    "kind": "natural"
+  }
+]

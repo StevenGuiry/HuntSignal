@@ -141,6 +141,10 @@ export type Detail = Card & {
 export type Stats = {
   total: number;
   full: number;
+  partial: number;
+  metadata: number;
+  papers: number;
+  feed_sources: number;
   reports: number;
   articles: number;
   sources: number;

@@ -1,6 +1,6 @@
 # HuntSignal
 
-A searchable library of public vulnerability write-ups and security research. Version 0.4 adds resumable ingestion, source health and administration, revision comparisons, capacity controls, and encrypted hosted backups. See the [Phase 4 operations guide](docs/phase4.md). Optional GitHub accounts, private libraries and alerts are documented in [Phase 3](docs/phase3.md); keyword and semantic search are described in [Phase 2](docs/phase2.md).
+A searchable library of public vulnerability write-ups and security research. Version 0.5 expands to ten configured sources, licensed WSTG full text, research abstracts, direct Bugcrowd disclosure discovery, curated blogs and explicit preservation coverage. See the [Phase 5 source guide](docs/phase5.md) and [Phase 4 operations guide](docs/phase4.md). Optional GitHub accounts, private libraries and alerts are documented in [Phase 3](docs/phase3.md); keyword and semantic search are described in [Phase 2](docs/phase2.md).
 
 ## Run locally
 
@@ -31,6 +31,9 @@ npm run alerts -- --remote          # Bounded saved-search notification processi
 npm run ops -- status --remote      # Schema, source health and capacity
 npm run ops -- housekeeping --remote # Run retention and withdrawal cleanup
 npm run ingest -- backfill --remote --source hackerone --limit 100
+npm run ingest -- refresh --remote --source bugcrowd --limit 25
+npm run ingest -- refresh --remote --source owasp-wstg --limit 150
+npx tsx scripts/check-sources.ts     # Three real samples per new source, no archive writes
 npm run backup:hosted               # Encrypted hosted snapshot + incremental objects
 npm run backup:restore -- --from SNAPSHOT --target NEW_DIRECTORY
 npm run config:check                # Validate ingestion settings without revealing keys
@@ -41,7 +44,7 @@ npm run enrich -- --remote          # Index pending hosted documents
 npm run search:eval                 # 50-query regression evaluation
 npm run test:wasm                   # WASM/native embedding agreement
 npm run ingest -- pilot --limit 50   # Smaller pilot
-npm run ingest -- hourly --limit 100 # Recent metadata discovery
+npm run ingest -- refresh --limit 100 # Due sources; hourly remains a compatible alias
 npm run ingest -- owasp --limit 100  # Refresh licensed research
 npm run ingest -- hackerone --limit 100
 npm run ingest -- hourly --feeds ingestion/feeds.local.json --limit 50
@@ -59,17 +62,19 @@ Custom imports must satisfy `packages/contracts.ts`. Full text requires `canArch
 
 | Source                         | Implemented behavior                                                                                                              |
 | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| OWASP Cheat Sheet Series       | Full text under CC BY-SA 4.0, pinned to a Git commit; attribution and license visible in the reader                               |
+| OWASP Cheat Sheet Series / WSTG | Full Markdown under CC BY-SA 4.0, pinned to a Git commit; attribution and license visible in the reader                            |
 | Pentester Land                 | Public JSON index, original report/write-up links, authors, dates, tags; no automatic copying of third-party bodies               |
 | HackerOne                      | Authenticated Hacktivity discovery, public disclosed metadata only; verified with ten recent reports using configured credentials |
-| Medium and independent feeds   | Configurable RSS/Atom adapter; approved HTTPS hosts, metadata by default                                                          |
-| Bugcrowd, Intigriti, YesWeHack | Original links can appear through the public index; dedicated direct discovery/body adapters are not implemented yet              |
+| Bugcrowd                       | Public CrowdStream disclosure metadata; undisclosed activity excluded                                                            |
+| Medium / PortSwigger Research  | Curated InfoSec Write-ups and PortSwigger feeds; metadata, authors and original links                                              |
+| Intigriti / YesWeHack Research | Public research articles; dedicated platform submission-disclosure adapters are not implemented                                  |
+| arXiv                          | Web-security papers with searchable CC0 abstracts marked partial; full papers linked at source                                   |
 
 Pentester Land is a historical index. Its last publication date is displayed through actual document data; a successful refresh does not mean it contains today's disclosures. OWASP publication dates remain unknown rather than substituting ingestion time. Newly indexed sorting is separate from newest publication sorting.
 
 ## Production on the proposed free stack
 
-1. Create a Supabase Free project. Apply the numbered SQL migrations in order, from `001_archive.sql` through `011_atomic_ingestion_fence.sql`. Existing installations only need unapplied migrations. These create the archive/search, personal library and operations schemas. Migration 007 has an installation-specific GitHub admin bootstrap: forks must replace or remove that owner ID before applying it.
+1. Create a Supabase Free project. Apply the numbered SQL migrations in order, from `001_archive.sql` through `013_source_precedence.sql`. Existing installations only need unapplied migrations. These create the archive/search, personal library and operations schemas. Migration 007 has an installation-specific GitHub admin bootstrap: forks must replace or remove that owner ID before applying it.
 2. Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in an ignored `.env` file in this workspace, or in the same terminal that runs ingestion. The CLI loads `.env` automatically; existing terminal/CI variables take precedence. `SUPABASE_URL` is the HTTPS project URL, not a Postgres connection string. The key setting accepts a legacy `service_role` JWT or a modern `sb_secret_` backend key. Keep it out of chat and browser code.
 
    ```powershell
@@ -96,7 +101,7 @@ Pentester Land is a historical index. Its last publication date is displayed thr
    npm run deploy
    ```
 
-4. For GitHub Actions, configure the same repository secrets. HackerOne discovery uses `HACKERONE_USERNAME` and `HACKERONE_API_TOKEN`. Manually run `Refresh archive` once, then set repository variable `INGESTION_ENABLED=true` to enable hourly scheduling at minute 17. The workflow runs enrichment after ingestion. Public repository standard Linux runners fit the planned free model; private repositories have limited minutes. Source code can be public; archives, `.data`, credentials, and future user data must remain private.
+4. For GitHub Actions, configure the same repository secrets. HackerOne discovery uses `HACKERONE_USERNAME` and `HACKERONE_API_TOKEN`. Manually run `Refresh archive` once, then set repository variable `INGESTION_ENABLED=true` to request scheduling every four hours at minute 17. GitHub may delay starts. The workflow runs enrichment after ingestion; individual sources also enforce their daily/weekly intervals. Public repository standard Linux runners fit the planned free model; private repositories have limited minutes. Source code can be public; archives, `.data`, credentials, and user data remain private.
 
 The hosted installation is at [huntsignal.huntsignal.workers.dev](https://huntsignal.huntsignal.workers.dev). It uses Supabase; `npm run dev` uses the local database. Creating workflow files alone does not activate hourly source ingestion. Cloudflare runs separate hourly alert matching and a source-health check; the ingestion runner fetches and indexes material. See [Phase 4](docs/phase4.md) for GitHub Actions activation, the private-code/local-runner alternative, capacity thresholds and recovery. Cloud deployment has no local-data fallback.
 

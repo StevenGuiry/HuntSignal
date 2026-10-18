@@ -9,7 +9,7 @@ async function get(path: string) {
   return r.json();
 }
 const health = await get("/api/health");
-assert.ok(["0.2.0", "0.3.0", "0.4.0"].includes(health.version));
+assert.ok(["0.2.0", "0.3.0", "0.4.0", "0.5.0"].includes(health.version));
 const status = await get("/api/search/status");
 assert.equal(status.model_id, EMBEDDING_MODEL.id);
 assert.ok(status.indexed_documents > 0);

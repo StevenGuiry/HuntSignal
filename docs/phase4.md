@@ -89,4 +89,4 @@ The daily Windows backup task was installed at 03:35 Europe/London and manual ta
 
 A 50-query hosted evaluation initially hit a database error on a long keyword query near the five-second search deadline. Migration 010 moves relevance scoring after document eligibility. Local comparison preserved complete result JSON for representative queries; the full hosted rerun completed successfully with keyword p95 208 ms and hybrid retrieval p95 228 ms. The designated reference article appeared in the hybrid top 20 for 49/50 queries. These timings cover retrieval RPC/network time and exclude browser model startup; this is a targeted regression set, not exhaustive relevance judgments. Raw results are in ignored `.data/evaluation/`.
 
-The seven-day observation window remains in progress. Wider source adapters and expansion toward thousands of records remain gated on measured operation and capacity.
+The seven-day observation window was still in progress on 18 October. The operator accepted a three-to-four-hour feed cadence and authorized [Phase 5](phase5.md), with bounded source expansion and capacity/search checks while operational observation continues.

@@ -3,7 +3,7 @@ const base = process.env.HUNTSIGNAL_API_URL || "http://127.0.0.1:8787";
 const get = (path: string) =>
   fetch(base + path, { signal: AbortSignal.timeout(20000) });
 const health = await (await get("/api/health")).json();
-assert.equal(health.version, "0.4.0");
+assert.ok(["0.4.0", "0.5.0"].includes(health.version));
 const response = await get("/api/operations/health");
 assert.equal(response.status, 200);
 assert.equal(response.headers.get("Cache-Control"), "no-store");

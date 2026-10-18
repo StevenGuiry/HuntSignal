@@ -1,1 +1,46 @@
-[]
+[
+  {
+    "id": "portswigger-research",
+    "name": "PortSwigger Research",
+    "platform": "PortSwigger",
+    "url": "https://portswigger.net/research/rss",
+    "allowedHosts": ["portswigger.net"],
+    "kind": "article",
+    "fullTextPermitted": false,
+    "license": "Original author retains content rights",
+    "licenseUrl": null,
+    "rightsEvidence": "https://portswigger.net/research",
+    "pollSeconds": 14400
+  },
+  {
+    "id": "intigriti-research",
+    "name": "Intigriti Research",
+    "platform": "Intigriti",
+    "url": "https://www.intigriti.com/researchers/blog/feed",
+    "allowedHosts": ["www.intigriti.com", "intigriti.com"],
+    "kind": "article",
+    "fullTextPermitted": false,
+    "license": "Original author retains content rights",
+    "licenseUrl": null,
+    "rightsEvidence": "https://www.intigriti.com/researchers/blog",
+    "includePaths": [
+      "/researchers/blog/hacking-tools/",
+      "/researchers/blog/bug-bytes/",
+      "/researchers/blog/bug-bounty-tips/"
+    ],
+    "pollSeconds": 14400
+  },
+  {
+    "id": "infosec-writeups",
+    "name": "InfoSec Write-ups (Medium)",
+    "platform": "Medium",
+    "url": "https://infosecwriteups.com/feed",
+    "allowedHosts": ["infosecwriteups.com", "medium.com"],
+    "kind": "article",
+    "fullTextPermitted": false,
+    "license": "Original author retains content rights",
+    "licenseUrl": null,
+    "rightsEvidence": "https://infosecwriteups.com/",
+    "pollSeconds": 14400
+  }
+]

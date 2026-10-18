@@ -1,5 +1,5 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
-import { resolve } from "node:path";
+import { resolve, basename } from "node:path";
 import {
   Repository,
   supabaseRpc,
@@ -16,6 +16,16 @@ import { EMBEDDING_MODEL } from "../packages/embeddings/config";
 import { createEncoder } from "../packages/embeddings/runtime";
 loadIngestionEnvironment();
 const remote = process.argv.includes("--remote");
+const caseOption = process.argv.indexOf("--cases");
+const casePath =
+  caseOption < 0
+    ? "tests/search-eval/cases.json"
+    : process.argv[caseOption + 1];
+if (!casePath) throw new Error("Use --cases PATH");
+const resultName =
+  caseOption < 0
+    ? "search"
+    : basename(casePath, ".json").replace(/[^a-zA-Z0-9_-]/g, "");
 let rpc: Rpc,
   read: ObjectReader,
   close = async () => {};
@@ -34,9 +44,11 @@ if (remote) {
 const encoder = await createEncoder(resolve("public/models") + "/");
 const dataRoot = resolve(process.env.HUNTSIGNAL_DATA_DIR || ".data");
 try {
-  const cases = JSON.parse(
-    await readFile("tests/search-eval/cases.json", "utf8"),
-  ) as { q: string; title: string; kind: string }[];
+  const cases = JSON.parse(await readFile(casePath, "utf8")) as {
+    q: string;
+    title: string;
+    kind: string;
+  }[];
   const repository = new Repository(rpc, read);
   const results: {
     q: string;
@@ -112,7 +124,10 @@ try {
   };
   await mkdir(resolve(dataRoot, "evaluation"), { recursive: true });
   await writeFile(
-    resolve(dataRoot, `evaluation/${remote ? "hosted-search" : "search"}.json`),
+    resolve(
+      dataRoot,
+      `evaluation/${remote ? "hosted-" : ""}${resultName}.json`,
+    ),
     JSON.stringify({ summary, results }, null, 2),
   );
   console.log(JSON.stringify(summary));

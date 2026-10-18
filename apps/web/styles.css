@@ -919,8 +919,9 @@ h1 {
   color: #8a9b7c;
 }
 .source-numbers {
-  display: flex;
-  gap: 50px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
   margin: 25px 0;
 }
 .source-numbers b {
@@ -1356,7 +1357,8 @@ h1 {
     font-size: 24px;
   }
   .result-tabs {
-    gap: 24px;
+    gap: 16px;
+    flex-wrap: wrap;
   }
   .source-grid {
     gap: 12px;

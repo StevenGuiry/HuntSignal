@@ -80,6 +80,8 @@ export async function openLocal(memory = false) {
     "009_revision_feed",
     "010_filtered_lexical_ranking",
     "011_atomic_ingestion_fence",
+    "012_source_coverage",
+    "013_source_precedence",
   ]) {
     const applied = await db.query(
       "select name from hs_migrations where name=$1",

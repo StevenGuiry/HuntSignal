@@ -12,6 +12,22 @@ export function canonicalize(value: string) {
   )
     throw new Error("Invalid source URL");
   url.hash = "";
+  // Only normalize aliases with known equivalent public article/report identities.
+  if (
+    ["www.hackerone.com", "hackerone.com"].includes(url.hostname) &&
+    /^\/reports\/\d+\/?$/.test(url.pathname)
+  ) {
+    url.protocol = "https:";
+    url.hostname = "hackerone.com";
+    url.pathname = url.pathname.replace(/\/$/, "");
+    url.search = "";
+  }
+  if (
+    url.hostname === "medium.com" ||
+    url.hostname.endsWith(".medium.com") ||
+    url.hostname === "infosecwriteups.com"
+  )
+    url.searchParams.delete("source");
   for (const key of [...url.searchParams.keys()])
     if (/^utm_/i.test(key) || ["fbclid", "gclid"].includes(key))
       url.searchParams.delete(key);

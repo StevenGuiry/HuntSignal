@@ -30,7 +30,7 @@ export async function ingestDocument(
         documentId: check.id,
         kind: "preservation",
         detail:
-          "A lower-completeness capture was rejected to preserve existing full text. Review extraction quality and archival permissions.",
+          "A lower-completeness capture was rejected to preserve the existing archived text. Review extraction quality and archival permissions.",
       });
     return {
       id: check.id,

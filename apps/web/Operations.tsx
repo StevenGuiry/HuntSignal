@@ -106,6 +106,12 @@ export function SourceHealthPanel() {
                 <dd>{time(s.last_success_at)}</dd>
                 <dt>Latest publication</dt>
                 <dd>{time(s.latest_publication)}</dd>
+                <dt>Polling interval</dt>
+                <dd>
+                  {s.poll_seconds >= 86400
+                    ? `${Math.round(s.poll_seconds / 86400)} day(s)`
+                    : `${Math.round(s.poll_seconds / 3600)} hours`}
+                </dd>
                 <dt>Pending / failed</dt>
                 <dd>
                   {s.pending} / {s.failed}

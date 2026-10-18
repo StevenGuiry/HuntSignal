@@ -1,6 +1,7 @@
 /** Uses Git Credential Manager for this repository. Credentials never reach stdout or arguments. */
 import { execFileSync } from "node:child_process";
 import sodium from "libsodium-wrappers";
+import { mkdir, writeFile } from "node:fs/promises";
 import { loadIngestionEnvironment } from "../ingestion/config";
 loadIngestionEnvironment();
 const repository = "StevenGuiry/HuntSignal",
@@ -77,6 +78,51 @@ if (mode === "status") {
       2,
     ),
   );
+} else if (mode === "logs") {
+  const run = process.argv[3];
+  if (!run || !/^\d+$/.test(run)) throw new Error("Use logs RUN_ID");
+  const response = await fetch(
+    `https://api.github.com/repos/${repository}/actions/runs/${run}/logs`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json",
+        "User-Agent": "HuntSignal-operations",
+      },
+      signal: AbortSignal.timeout(30000),
+    },
+  );
+  if (!response.ok) throw new Error(`GitHub logs returned ${response.status}`);
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  if (bytes.length > 20_000_000) throw new Error("Log archive exceeds limit");
+  await mkdir(".data/diagnostics", { recursive: true });
+  const path = `.data/diagnostics/github-${run}.zip`;
+  await writeFile(path, bytes);
+  console.log(JSON.stringify({ run, path, bytes: bytes.length }));
+} else if (mode === "dispatch") {
+  const source = process.argv[3] || "all";
+  if (!/^[a-z0-9-]{1,60}$/.test(source)) throw new Error("Invalid source ID");
+  if (repo.private)
+    throw new Error(
+      "Public repository required for the configured free runner",
+    );
+  const commit = execFileSync("git", ["rev-parse", "HEAD"], {
+    encoding: "utf8",
+  }).trim();
+  const remote = await api(
+    `/repos/${repository}/commits/${repo.default_branch}`,
+  );
+  if (remote.sha !== commit)
+    throw new Error("Push the tested commit before dispatch");
+  await api(
+    `/repos/${repository}/actions/workflows/ingest.yml/dispatches`,
+    "POST",
+    {
+      ref: repo.default_branch,
+      inputs: { mode: "refresh", source, limit: "25" },
+    },
+  );
+  console.log(JSON.stringify({ repository, source, status: "dispatched" }));
 } else if (mode === "make-public") {
   if (!process.argv.includes("--confirmed"))
     throw new Error(
@@ -145,4 +191,7 @@ if (mode === "status") {
       initialRun: "dispatched",
     }),
   );
-} else throw new Error("Use status, make-public --confirmed, or enable");
+} else
+  throw new Error(
+    "Use status, logs RUN_ID, dispatch [SOURCE], make-public --confirmed, or enable",
+  );

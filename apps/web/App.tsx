@@ -67,6 +67,9 @@ type Source = {
   detail: string;
   documents: number;
   full: number;
+  partial: number;
+  metadata: number;
+  papers: number;
   last_success_at: string | null;
 };
 type Run = {
@@ -417,7 +420,7 @@ export default function App() {
           </span>
         </button>
         <div className="workspace-label">
-          <span className="status-dot" /> PUBLIC COLLECTION <span>04</span>
+          <span className="status-dot" /> PUBLIC COLLECTION <span>05</span>
         </div>
         <nav aria-label="Main navigation">
           <span className="nav-label">EXPLORE</span>
@@ -517,7 +520,7 @@ export default function App() {
           <span className="avatar">HS</span>
           <div>
             {auth.user?.name || "Research workspace"}
-            <small>Research archive · v0.4</small>
+            <small>Research archive · v0.5</small>
           </div>
           <span className="status-dot" />
         </div>
@@ -762,6 +765,23 @@ export default function App() {
                 <ErrorBox message={error} />
               ) : (
                 <>
+                  <div className="stats-row">
+                    <Stat
+                      label="FULL TEXT"
+                      value={stats?.full}
+                      icon={<Database size={17} />}
+                    />
+                    <Stat
+                      label="PARTIAL TEXT / ABSTRACTS"
+                      value={stats?.partial}
+                      icon={<BookOpen size={17} />}
+                    />
+                    <Stat
+                      label="METADATA ONLY"
+                      value={stats?.metadata}
+                      icon={<FileText size={17} />}
+                    />
+                  </div>
                   <SourceHealthPanel />
                   <div className="source-grid">
                     {sources.map((s) => (
@@ -781,6 +801,14 @@ export default function App() {
                           <div>
                             <b>{s.full}</b>
                             <span>full text</span>
+                          </div>
+                          <div>
+                            <b>{s.partial || 0}</b>
+                            <span>partial text</span>
+                          </div>
+                          <div>
+                            <b>{s.metadata || 0}</b>
+                            <span>metadata only</span>
                           </div>
                         </div>
                         <div className="source-status">
@@ -841,9 +869,10 @@ export default function App() {
                     <ShieldCheck size={18} />
                     <p>
                       Coverage is explicit: licensed articles retain full text;
-                      public bounty index entries retain metadata and original
-                      links. Platform APIs and RSS feeds can be added through
-                      the ingestion adapters.
+                      abstracts and permitted feed excerpts are marked partial.
+                      Metadata-only entries link to the original report or
+                      article. Research blogs are distinct from platform report
+                      disclosures.
                     </p>
                   </div>
                 </>
@@ -995,7 +1024,13 @@ export default function App() {
                     className={state.kind === "article" ? "selected" : ""}
                     onClick={() => update({ kind: "article" })}
                   >
-                    Research
+                    Articles
+                  </button>
+                  <button
+                    className={state.kind === "paper" ? "selected" : ""}
+                    onClick={() => update({ kind: "paper" })}
+                  >
+                    Papers
                   </button>
                 </div>
                 <button
