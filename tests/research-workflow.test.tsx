@@ -19,6 +19,12 @@ import { publicHackerOneBody, articleBody } from "../ingestion/capture";
 it("requires currency for bounty ranges and validates saved filters identically", () => {
   for (const schema of [searchSchema, personalFilters]) {
     expect(schema.safeParse({ bountyMin: 100 }).success).toBe(false);
+    expect(schema.safeParse({ currency: "USD", bountyMin: null }).success).toBe(
+      false,
+    );
+    expect(schema.safeParse({ currency: "USD", bountyMin: true }).success).toBe(
+      false,
+    );
     expect(
       schema.safeParse({ currency: "USD", bountyMin: 100, bountyMax: 50 })
         .success,

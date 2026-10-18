@@ -28,3 +28,9 @@ Run `npm run quality:check -- --remote --limit 500` for an initial audit. The fo
 Apply `016_research_workflow.sql` after migration 015. It adds shared filter/facet/quality functions and updates search/detail/alert functions, without changing durable table shapes or backup format. Audit the archive, index any repaired revisions, then deploy the Worker. Tests cover keyword/semantic/alert parity, missing/zero/currency amounts, source-preserving cleanup, stale writes, private permissions, rendered code and snippet offsets. Browser verification covers filter submissions, contents, copying, resume and passage navigation.
 
 Rollback the Worker if search or reader interactions regress, and pause the quality workflow step if extraction checks misclassify content. The additive migration and immutable archived revisions can remain; previous clients ignore new card fields. Saved report filters require the new database functions to remain available.
+
+## Initial verification, 18 October 2026
+
+The 111-test suite passed in CI. Migration 016 was applied successfully. The initial audit checked all 444 readable documents, repaired one duplicated public summary and flagged two complete reports with repeated sections for review; those original reports were not rewritten. The repaired summary was reindexed, leaving 444/444 documents indexed. The 50-query benchmark retained 48/50 designated documents in the hybrid top 20; hybrid retrieval p95 was 477 ms and keyword p95 was 302 ms. These measurements exclude browser model startup.
+
+Live checks confirmed the combined Mozilla/High-or-Critical/USD/minimum-1,000 filter returned its USD 3,000 High report. Browser checks verified matching-passage focus, contents navigation, successful code copying and resume after reload at the saved source offset. Reading position is intentionally local to this device.

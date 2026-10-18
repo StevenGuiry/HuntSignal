@@ -1,7 +1,13 @@
 import { z } from "zod";
 
 const optionalAmount = z.preprocess(
-  (v) => (v === "" || v === undefined ? undefined : v),
+  (v) =>
+    v === "" || v === undefined
+      ? undefined
+      : typeof v === "number" ||
+          (typeof v === "string" && /^\d+(\.\d+)?$/.test(v))
+        ? v
+        : Number.NaN,
   z.coerce.number().finite().min(0).max(1e12).optional(),
 );
 export const researchFilterShape = {

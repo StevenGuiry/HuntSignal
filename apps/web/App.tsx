@@ -447,7 +447,7 @@ export default function App() {
           </span>
         </button>
         <div className="workspace-label">
-          <span className="status-dot" /> PUBLIC COLLECTION <span>05</span>
+          <span className="status-dot" /> PUBLIC COLLECTION <span>06</span>
         </div>
         <nav aria-label="Main navigation">
           <span className="nav-label">EXPLORE</span>
@@ -547,7 +547,7 @@ export default function App() {
           <span className="avatar">HS</span>
           <div>
             {auth.user?.name || "Research workspace"}
-            <small>Research archive · v0.5</small>
+            <small>Research archive · v0.6</small>
           </div>
           <span className="status-dot" />
         </div>
@@ -642,7 +642,7 @@ export default function App() {
                       {copied ? "Link copied" : "Copy link"}
                     </button>
                     <span
-                      className={`archive-badge ${detail.completeness === "full" ? "complete" : ""}`}
+                      className={`archive-badge ${detail.completeness === "full" && !needsContentReview(detail.content_quality) ? "complete" : ""}`}
                     >
                       <Database size={12} />
                       {contentLabel(detail)}
@@ -1390,8 +1390,18 @@ function ResultCard({
             <span
               className={`severity-${item.report_facts?.severity || "unknown"}`}
             >
-              {item.report_facts?.severityFinal ? "Final" : "Current"} severity:{" "}
-              {item.report_facts?.severity || "Not available"}
+              {item.report_facts
+                ? item.report_facts.severityFinal
+                  ? "Final severity"
+                  : "Current severity"
+                : "Severity"}
+              :{" "}
+              {item.report_facts?.severity
+                ? item.report_facts.severity[0].toUpperCase() +
+                  item.report_facts.severity.slice(1)
+                : item.report_facts
+                  ? "Not disclosed"
+                  : "Not available"}
               {item.report_facts?.priority
                 ? ` · ${item.report_facts.priority}`
                 : ""}
@@ -1428,9 +1438,10 @@ function ResultCard({
             {item.authors.length > 1 ? ` +${item.authors.length - 1}` : ""}
           </span>
           <span
-            className={`archive-badge ${item.completeness === "full" ? "complete" : ""}`}
+            className={`archive-badge ${item.completeness === "full" && !needsContentReview(item.content_quality) ? "complete" : ""}`}
           >
-            {item.completeness === "full" ? (
+            {item.completeness === "full" &&
+            !needsContentReview(item.content_quality) ? (
               <Check size={12} />
             ) : (
               <Globe size={12} />
